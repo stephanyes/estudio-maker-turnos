@@ -1,0 +1,188 @@
+{
+   "supabase_db_changes":{
+      "version":"2025-08-27",
+      "files_updated":[
+         "supabase-db.ts"
+      ],
+      "breaking_changes":false,
+      "summary":"Correcciones de mapping y seguridad en Appointments + ajuste de defaults en Staff Schedules. Se preservan valores 0, no se pisa created_by en updates y se respetan defaults de la base.",
+      "changes":[
+         {
+            "component":"convertidores",
+            "name":"toAppointment",
+            "type":"fix",
+            "reason":"Evitar que montos 0 se conviertan en undefined.",
+            "before":"finalPrice/listPrice se asignaban con checks 'falsy' (0 → undefined).",
+            "after":"Se usa typeof === 'number' para mapear 0 correctamente; se mantiene división /100.",
+            "fields_affected":[
+               "finalPrice",
+               "listPrice"
+            ],
+            "impacts":[
+               "La UI muestra 0 correctamente",
+               "Cálculos no fallan por undefined"
+            ]
+         },
+         {
+            "component":"appointments_api",
+            "object":"appointments",
+            "function":"add",
+            "type":"fix",
+            "reason":"No convertir 0 en null y respetar defaults.",
+            "before":"final_price/list_price usaban condición 'falsy' (0 → null).",
+            "after":"Se usa '!== undefined' y '??' para defaults; 0 es válido y se persiste.",
+            "fields_affected":[
+               "final_price",
+               "list_price",
+               "discount",
+               "payment_status"
+            ]
+         },
+         {
+            "component":"appointments_api",
+            "object":"appointments",
+            "function":"insert",
+            "type":"fix",
+            "reason":"Mismo criterio que add: preservar 0 y defaults.",
+            "before":"Checks 'falsy' producían null para 0.",
+            "after":"Uso de '!== undefined' y '??' para campos de pago y métricas/empleado.",
+            "fields_affected":[
+               "final_price",
+               "list_price",
+               "discount",
+               "payment_status",
+               "actual_duration_min",
+               "started_at",
+               "completed_at",
+               "assigned_to"
+            ]
+         },
+         {
+            "component":"appointments_api",
+            "object":"appointments",
+            "function":"put",
+            "type":"refactor_security",
+            "reason":"No pisar created_by en updates y cumplir RLS.",
+            "before":"upsert enviaba created_by también en updates (riesgo de cambiar propietario).",
+            "after":"Si no existe: insert(); si existe: update sin tocar created_by; mapping seguro para 0.",
+            "fields_affected":[
+               "client_id",
+               "service_id",
+               "title",
+               "start_date_time",
+               "duration_min",
+               "is_recurring",
+               "rrule",
+               "timezone",
+               "notes",
+               "status",
+               "payment_method",
+               "final_price",
+               "list_price",
+               "discount",
+               "payment_status",
+               "payment_notes",
+               "actual_duration_min",
+               "started_at",
+               "completed_at",
+               "assigned_to"
+            ],
+            "security":[
+               "Cumple RLS: created_by solo se establece en inserts"
+            ]
+         },
+         {
+            "component":"appointments_api",
+            "object":"appointments",
+            "function":"update",
+            "type":"fix",
+            "reason":"No convertir 0 en null; consistencia de centavos.",
+            "before":"final_price/list_price usaban checks 'falsy' (0 → null).",
+            "after":"Se setean solo si !== undefined y siempre en centavos; discount respeta 0.",
+            "fields_affected":[
+               "final_price",
+               "list_price",
+               "discount"
+            ]
+         },
+         {
+            "component":"staff_schedules_api",
+            "object":"staffSchedules",
+            "function":"add",
+            "type":"fix_default",
+            "reason":"Respetar default de is_active en DB.",
+            "before":"Se enviaba is_active: undefined → null (se perdía el DEFAULT).",
+            "after":"Solo se incluye is_active si fue provisto; caso contrario aplica DEFAULT.",
+            "fields_affected":[
+               "is_active"
+            ]
+         }
+      ],
+      "data_integrity":{
+         "cent_amounts":"Se preserva 0 en final_price y list_price al mapear a/desde centavos.",
+         "nullish_handling":"Uso de '??' para defaults y '!== undefined' para campos numéricos.",
+         "symmetry":"Writers x100 ↔ Convertidores /100."
+      },
+      "rls_and_security":{
+         "created_by":"Nunca se modifica en updates (solo en inserts).",
+         "business_scope":"Mutaciones filtradas por business_id.",
+         "assigned_to":"Permite null sin efectos colaterales."
+      },
+      "api_surface":{
+         "unchanged_endpoints":[
+            "services",
+            "clients",
+            "exceptions",
+            "walkIns"
+         ],
+         "modified_endpoints":{
+            "appointments":[
+               "add",
+               "insert",
+               "put",
+               "update"
+            ],
+            "convertidores":[
+               "toAppointment"
+            ],
+            "staffSchedules":[
+               "add"
+            ]
+         }
+      },
+      "migration_notes":{
+         "db_schema_required":"Ninguno adicional; el esquema ya contiene payment_*, métricas y assigned_to.",
+         "client_changes_required":"Ninguno en firmas públicas; mejora de comportamiento y seguridad."
+      },
+      "test_recommendations":[
+         {
+            "name":"appointments_zero_values_roundtrip",
+            "goal":"finalPrice=0 y listPrice=0 sobreviven insert/get/update sin volverse null/undefined.",
+            "steps":[
+               "insert con finalPrice=0,listPrice=0",
+               "get y verificar 0",
+               "update finalPrice=0",
+               "get y verificar 0"
+            ]
+         },
+         {
+            "name":"appointments_put_preserves_created_by",
+            "goal":"Confirmar que put no cambia created_by.",
+            "steps":[
+               "insert A (created_by=U1)",
+               "operar como U2",
+               "put A con cambios",
+               "verificar created_by sigue U1"
+            ]
+         },
+         {
+            "name":"staffSchedules_add_default_is_active",
+            "goal":"Si isActive no se envía, DB setea true por default.",
+            "steps":[
+               "insert sin isActive",
+               "leer y verificar is_active=true"
+            ]
+         }
+      ]
+   }
+}

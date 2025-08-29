@@ -1,0 +1,267 @@
+{
+  "database_expansion_plan": {
+    "current_implementation": {
+      "status": "completed",
+      "features": [
+        "Sistema de pagos con descuentos automáticos",
+        "Walk-ins (personas sin cita previa)",
+        "Tracking de métodos de pago (efectivo/tarjeta/transferencia)", 
+        "Estados de pago (pendiente/pagado)",
+        "Vista de revenue diario",
+        "Vista de tráfico de personas",
+        "Sistema de clientes con seguimiento",
+        "Citas recurrentes con excepciones",
+        "Historial completo de clientes"
+      ]
+    },
+    "priority_1_critical": {
+      "description": "Implementar inmediatamente",
+      "status": "COMPLETADO", 
+      "completion_date": "2025-01-XX",
+      "features": [
+        {
+          "name": "Métricas de tiempo real",
+          "status": "COMPLETADO",
+          "tables": ["appointments", "walk_ins"],
+          "columns_added": [
+            "actual_duration_min INTEGER",
+            "started_at TIMESTAMPTZ", 
+            "completed_at TIMESTAMPTZ"
+          ],
+          "business_value": "Saber cuánto tiempo realmente toma cada servicio vs estimado. Optimizar scheduling.",
+          "sql_migration": "ALTER TABLE appointments ADD COLUMN actual_duration_min INTEGER, ADD COLUMN started_at TIMESTAMPTZ, ADD COLUMN completed_at TIMESTAMPTZ;",
+          "implementation_notes": {
+            "database": "Migraciones ejecutadas correctamente en Supabase",
+            "api": "Convertidores actualizados en supabase-db.ts",
+            "hooks": "useTimeMetrics() y calculateActualDuration() implementados",
+            "ui": "TimeMetricsView creada con análisis completo de precisión"
+          }
+        },
+        {
+          "name": "Asignación de empleados",
+          "status": "COMPLETADO",
+          "tables": ["appointments", "walk_ins", "staff_schedules"],
+          "new_tables": [
+            {
+              "name": "staff_schedules",
+              "status": "CREADA",
+              "columns": [
+                "id UUID PRIMARY KEY DEFAULT gen_random_uuid()",
+                "business_id UUID NOT NULL REFERENCES businesses(id)",
+                "user_id UUID NOT NULL REFERENCES user_profiles(id)",
+                "day_of_week INTEGER NOT NULL CHECK (day_of_week >= 0 AND day_of_week <= 6)",
+                "start_time TIME NOT NULL",
+                "end_time TIME NOT NULL", 
+                "is_active BOOLEAN DEFAULT true",
+                "created_at TIMESTAMPTZ DEFAULT NOW()",
+                "updated_at TIMESTAMPTZ DEFAULT NOW()"
+              ]
+            }
+          ],
+          "columns_added": [
+            "assigned_to UUID REFERENCES user_profiles(id) -- en appointments",
+            "served_by UUID REFERENCES user_profiles(id) -- en walk_ins"
+          ],
+          "business_value": "Saber quién hizo qué servicio. Medir productividad por empleado.",
+          "features_enabled": ["Reportes por empleado", "Comisiones", "Horarios de trabajo"],
+          "implementation_notes": {
+            "database": "Tabla staff_schedules creada con RLS completo",
+            "api": "APIs userProfiles y staffSchedules implementadas",
+            "hooks": "useUserProfiles(), useStaffSchedules(), useEmployeeProductivity() creados",
+            "ui": "StaffManagementView implementada para gestión de horarios",
+            "productivity": "Métricas de productividad por empleado en TimeMetricsView"
+          }
+        }
+      ],
+      "next_steps": [
+        "Actualizar AppointmentForm para incluir selector de empleado asignado",
+        "Agregar controles de timing (start/stop) en las vistas de agenda",
+        "Implementar notificaciones cuando un servicio excede tiempo estimado"
+      ]
+    },
+    "priority_2_important": {
+      "description": "Implementar en los próximos 1-3 meses",
+      "features": [
+        {
+          "name": "Gestión básica de inventario",
+          "new_tables": [
+            {
+              "name": "products",
+              "columns": [
+                "id UUID PRIMARY KEY DEFAULT gen_random_uuid()",
+                "business_id UUID NOT NULL REFERENCES businesses(id)",
+                "name TEXT NOT NULL",
+                "category TEXT -- shampoo, gel, cera, etc",
+                "stock_quantity INTEGER DEFAULT 0",
+                "cost_price INTEGER -- precio de compra en centavos",
+                "sell_price INTEGER -- precio de venta en centavos", 
+                "low_stock_alert INTEGER DEFAULT 10",
+                "created_at TIMESTAMPTZ DEFAULT now()"
+              ]
+            },
+            {
+              "name": "product_usage",
+              "columns": [
+                "id UUID PRIMARY KEY DEFAULT gen_random_uuid()",
+                "business_id UUID NOT NULL REFERENCES businesses(id)",
+                "appointment_id UUID REFERENCES appointments(id)",
+                "walk_in_id UUID REFERENCES walk_ins(id)",
+                "product_id UUID NOT NULL REFERENCES products(id)",
+                "quantity_used NUMERIC NOT NULL",
+                "timestamp TIMESTAMPTZ DEFAULT now()"
+              ]
+            }
+          ],
+          "business_value": "Control de stock. Saber qué productos usar más. Calcular costos reales por servicio.",
+          "features_enabled": ["Alertas de stock bajo", "Costos por servicio", "Compras automáticas"]
+        },
+        {
+          "name": "Fuente de adquisición de clientes",
+          "tables": ["clients"],
+          "columns_to_add": [
+            "referral_source TEXT -- instagram, google, referido, volante, etc",
+            "referred_by_client_id UUID REFERENCES clients(id)",
+            "lifetime_value INTEGER DEFAULT 0",
+            "acquisition_cost INTEGER DEFAULT 0"
+          ],
+          "business_value": "Saber de dónde vienen los clientes. Medir ROI de marketing. Programa de referidos.",
+          "features_enabled": ["Dashboard de marketing", "Programa de referidos", "ROI por canal"]
+        }
+      ]
+    },
+    "priority_3_nice_to_have": {
+      "description": "Implementar cuando el negocio crezca más",
+      "features": [
+        {
+          "name": "Sistema de fidelización",
+          "new_tables": [
+            {
+              "name": "loyalty_points",
+              "columns": [
+                "id UUID PRIMARY KEY DEFAULT gen_random_uuid()",
+                "business_id UUID NOT NULL REFERENCES businesses(id)",
+                "client_id UUID NOT NULL REFERENCES clients(id)",
+                "points_earned INTEGER NOT NULL",
+                "points_used INTEGER DEFAULT 0",
+                "reason TEXT -- service_completed, referral, promotion",
+                "appointment_id UUID REFERENCES appointments(id)",
+                "walk_in_id UUID REFERENCES walk_ins(id)",
+                "created_at TIMESTAMPTZ DEFAULT now()"
+              ]
+            }
+          ],
+          "business_value": "Retener clientes. Incentivar visitas frecuentes.",
+          "features_enabled": ["Sistema de puntos", "Descuentos por fidelidad", "Recompensas"]
+        },
+        {
+          "name": "Gestión completa de gastos",
+          "new_tables": [
+            {
+              "name": "business_expenses",
+              "columns": [
+                "id UUID PRIMARY KEY DEFAULT gen_random_uuid()",
+                "business_id UUID NOT NULL REFERENCES businesses(id)",
+                "category TEXT NOT NULL -- rent, utilities, supplies, marketing, etc",
+                "amount INTEGER NOT NULL -- en centavos",
+                "description TEXT",
+                "date DATE NOT NULL",
+                "receipt_url TEXT -- link a foto del recibo",
+                "created_by UUID NOT NULL REFERENCES user_profiles(id)",
+                "created_at TIMESTAMPTZ DEFAULT now()"
+              ]
+            }
+          ],
+          "business_value": "Control total de gastos. Cálculo de rentabilidad real.",
+          "features_enabled": ["P&L automático", "Análisis de rentabilidad", "Control de costos"]
+        },
+        {
+          "name": "Sistema de promociones",
+          "new_tables": [
+            {
+              "name": "promotions",
+              "columns": [
+                "id UUID PRIMARY KEY DEFAULT gen_random_uuid()",
+                "business_id UUID NOT NULL REFERENCES businesses(id)",
+                "name TEXT NOT NULL",
+                "discount_percentage INTEGER",
+                "discount_amount INTEGER",
+                "start_date DATE NOT NULL",
+                "end_date DATE NOT NULL",
+                "max_uses INTEGER",
+                "current_uses INTEGER DEFAULT 0",
+                "is_active BOOLEAN DEFAULT true",
+                "conditions JSONB -- reglas complejas"
+              ]
+            }
+          ],
+          "columns_to_add": [
+            "promotion_id UUID REFERENCES promotions(id) -- en appointments",
+            "promotion_id UUID REFERENCES promotions(id) -- en walk_ins"
+          ],
+          "business_value": "Promociones automáticas. Campañas de marketing dirigidas.",
+          "features_enabled": ["Happy hour", "Promociones por cliente", "Campañas estacionales"]
+        }
+      ]
+    },
+    "advanced_features": {
+      "description": "Para cuando el negocio sea más grande",
+      "features": [
+        {
+          "name": "Multi-location",
+          "tables": ["businesses"],
+          "new_tables": [
+            {
+              "name": "locations", 
+              "columns": [
+                "id UUID PRIMARY KEY DEFAULT gen_random_uuid()",
+                "business_id UUID NOT NULL REFERENCES businesses(id)",
+                "name TEXT NOT NULL",
+                "address TEXT",
+                "phone TEXT",
+                "is_active BOOLEAN DEFAULT true"
+              ]
+            }
+          ],
+          "business_value": "Manejar múltiples sucursales"
+        },
+        {
+          "name": "Sistema de reservas online",
+          "new_tables": [
+            {
+              "name": "online_bookings",
+              "columns": [
+                "id UUID PRIMARY KEY DEFAULT gen_random_uuid()",
+                "business_id UUID NOT NULL REFERENCES businesses(id)",
+                "client_email TEXT NOT NULL",
+                "client_phone TEXT",
+                "client_name TEXT NOT NULL",
+                "requested_datetime TIMESTAMPTZ NOT NULL",
+                "service_id UUID NOT NULL REFERENCES services(id)",
+                "status TEXT DEFAULT 'pending'",
+                "created_at TIMESTAMPTZ DEFAULT now()"
+              ]
+            }
+          ],
+          "business_value": "Clientes pueden agendar online 24/7"
+        }
+      ]
+    },
+    "implementation_notes": {
+      "database_changes": {
+        "migration_strategy": "Implementar cambios de forma incremental sin downtime",
+        "backup_strategy": "Siempre hacer backup antes de migraciones",
+        "rollback_plan": "Tener plan de rollback para cada migración"
+      },
+      "code_changes": {
+        "react_query": "Agregar hooks para cada nueva funcionalidad",
+        "supabase_db": "Actualizar convertidores y APIs",
+        "ui_components": "Crear nuevas vistas y formularios"
+      },
+      "business_considerations": {
+        "training": "Capacitar al personal en nuevas funcionalidades",
+        "data_migration": "Migrar datos existentes si es necesario",
+        "user_adoption": "Implementar gradualmente para no abrumar usuarios"
+      }
+    }
+  }
+}
