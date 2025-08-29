@@ -6,20 +6,34 @@ import {
   useDeleteStaffSchedule 
 } from '@/lib/queries';
 import { useData } from '@/app/context/DataProvider';
-import { StaffSchedule } from '@/lib/supabase-db';
-import { Users, Clock, Plus, Edit3, Trash2, Calendar } from 'lucide-react';
+import { useAuth } from '@/app/context/AuthContext';
+import { StaffSchedule, UserProfile } from '@/lib/supabase-db';
+import { Users, Clock, Plus, Edit3, Trash2, Calendar, UserCheck, UserX, RotateCcw } from 'lucide-react';
 
 export default function StaffManagementView() {
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [showScheduleForm, setShowScheduleForm] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<StaffSchedule | null>(null);
+  const [showDeletedUsers, setShowDeletedUsers] = useState(false);
 
   // 🎯 DataProvider para obtener todos los datos
   const { userProfiles, staffSchedules: schedules, loading } = useData();
+  const { reactivateUser } = useAuth();
 
   const createScheduleMutation = useCreateStaffSchedule();
   const updateScheduleMutation = useUpdateStaffSchedule();
   const deleteScheduleMutation = useDeleteStaffSchedule();
+
+  // Debug: verificar qué datos están llegando
+  console.log('🔍 StaffManagementView - userProfiles:', userProfiles);
+  console.log('🔍 StaffManagementView - userProfiles[0]:', userProfiles[0]);
+
+  // Separar empleados activos y eliminados
+  const activeEmployees = userProfiles.filter(emp => emp.status === 'active');
+  const deletedEmployees = userProfiles.filter(emp => emp.status === 'deleted');
+
+  console.log('🔍 StaffManagementView - activeEmployees:', activeEmployees);
+  console.log('🔍 StaffManagementView - deletedEmployees:', deletedEmployees);
 
   const days = [
     { name: 'Domingo', value: 0 },
@@ -33,6 +47,25 @@ export default function StaffManagementView() {
 
   const getUserSchedules = (userId: string) => {
     return schedules.filter(s => s.userId === userId);
+  };
+
+  const handleReactivateUser = async (userId: string, userName: string) => {
+    if (!confirm(`¿Estás seguro de que quieres reactivar a ${userName}?`)) {
+      return;
+    }
+
+    try {
+      const { error } = await reactivateUser(userId);
+      if (error) {
+        alert(`Error al reactivar usuario: ${error.message}`);
+      } else {
+        alert('Usuario reactivado exitosamente');
+        // Recargar datos
+        window.location.reload();
+      }
+    } catch (error) {
+      alert('Error inesperado al reactivar usuario');
+    }
   };
 
   if (loading.staff) {
@@ -66,66 +99,69 @@ export default function StaffManagementView() {
         </button>
       </div>
 
-      {/* Lista de empleados */}
-      <div className="grid gap-6">
-        {userProfiles.map(employee => {
-          const employeeSchedules = getUserSchedules(employee.id);
-          
-          return (
-            <div 
-              key={employee.id}
-              className="bg-white dark:bg-neutral-800 rounded-lg border border-zinc-200 dark:border-zinc-700 p-6"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                    {employee.name}
-                  </h3>
-                  <p className="text-sm text-zinc-500 capitalize">{employee.role}</p>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-zinc-500">
-                    {employeeSchedules.length} horarios
-                  </span>
-                  <button
-                    onClick={() => {
-                      setSelectedUserId(employee.id);
-                      setShowScheduleForm(true);
-                    }}
-                    className="p-2 text-sky-600 hover:bg-sky-100 dark:hover:bg-sky-900/20 rounded-lg"
-                    title="Agregar horario"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+      {/* Empleados Activos */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <UserCheck className="w-5 h-5 text-green-600" />
+          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
+            Empleados Activos ({activeEmployees.length})
+          </h2>
+        </div>
 
-              {/* Horarios del empleado */}
-              <div className="space-y-3">
-                {employeeSchedules.length === 0 ? (
-                  <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
-                    <Clock className="w-12 h-12 mx-auto mb-4 opacity-40" />
-                    <p>No hay horarios configurados</p>
-                    <p className="text-sm">Agrega horarios de trabajo para este empleado</p>
+        <div className="grid gap-4">
+          {activeEmployees.map(employee => {
+            const employeeSchedules = getUserSchedules(employee.id);
+            
+            return (
+              <div 
+                key={employee.id}
+                className="bg-white dark:bg-neutral-800 rounded-lg border border-zinc-200 dark:border-zinc-700 p-6"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                      {employee.name}
+                    </h3>
+                    <p className="text-sm text-zinc-500 capitalize">{employee.role}</p>
                   </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {employeeSchedules.map(schedule => {
-                      const dayName = days.find(d => d.value === schedule.dayOfWeek)?.name;
-                      
-                      return (
-                        <div
+                  
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-zinc-500">
+                      {employeeSchedules.length} horarios
+                    </span>
+                    <button
+                      onClick={() => {
+                        setSelectedUserId(employee.id);
+                        setShowScheduleForm(true);
+                      }}
+                      className="p-2 text-sky-600 hover:bg-sky-100 dark:hover:bg-sky-900/20 rounded-lg"
+                      title="Agregar horario"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Horarios del empleado */}
+                {employeeSchedules.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                      Horarios configurados:
+                    </h4>
+                    <div className="grid gap-2">
+                      {employeeSchedules.map(schedule => (
+                        <div 
                           key={schedule.id}
-                          className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-neutral-700 rounded-lg"
+                          className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-700/50 rounded-lg"
                         >
-                          <div>
-                            <div className="font-medium text-zinc-900 dark:text-zinc-100">
-                              {dayName}
-                            </div>
-                            <div className="text-sm text-zinc-500 dark:text-zinc-400">
+                          <div className="flex items-center gap-3">
+                            <Calendar className="w-4 h-4 text-zinc-500" />
+                            <span className="text-sm font-medium">
+                              {days.find(d => d.value === schedule.dayOfWeek)?.name}
+                            </span>
+                            <span className="text-sm text-zinc-600 dark:text-zinc-400">
                               {schedule.startTime} - {schedule.endTime}
-                            </div>
+                            </span>
                           </div>
                           
                           <div className="flex items-center gap-1">
@@ -134,49 +170,122 @@ export default function StaffManagementView() {
                                 setEditingSchedule(schedule);
                                 setShowScheduleForm(true);
                               }}
-                              className="p-1 text-zinc-500 hover:text-sky-600"
+                              className="p-1 text-zinc-600 hover:text-sky-600"
                               title="Editar horario"
                             >
-                              <Edit3 className="w-4 h-4" />
+                              <Edit3 className="w-3 h-3" />
                             </button>
                             <button
-                              onClick={() => {
-                                if (confirm('¿Eliminar este horario?')) {
-                                  deleteScheduleMutation.mutate(schedule.id);
-                                }
-                              }}
-                              className="p-1 text-zinc-500 hover:text-red-600"
+                              onClick={() => deleteScheduleMutation.mutate(schedule.id)}
+                              className="p-1 text-zinc-600 hover:text-red-600"
                               title="Eliminar horario"
-                              disabled={deleteScheduleMutation.isPending}
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-3 h-3" />
                             </button>
                           </div>
                         </div>
-                      );
-                    })}
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
-            </div>
-          );
-        })}
-
-        {userProfiles.length === 0 && (
-          <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
-            <Users className="w-12 h-12 mx-auto mb-4 opacity-40" />
-            <p>No hay empleados registrados</p>
-            <p className="text-sm">Los empleados se registran automáticamente cuando se crean usuarios</p>
-          </div>
-        )}
+            );
+          })}
+        </div>
       </div>
+
+      {/* Empleados Eliminados */}
+      {deletedEmployees.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <UserX className="w-5 h-5 text-red-600" />
+              <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
+                Empleados Eliminados ({deletedEmployees.length})
+              </h2>
+            </div>
+            
+            <button
+              onClick={() => setShowDeletedUsers(!showDeletedUsers)}
+              className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+            >
+              {showDeletedUsers ? 'Ocultar' : 'Mostrar'}
+            </button>
+          </div>
+
+          {showDeletedUsers && (
+            <div className="grid gap-4">
+              {deletedEmployees.map(employee => {
+                const employeeSchedules = getUserSchedules(employee.id);
+                
+                return (
+                  <div 
+                    key={employee.id}
+                    className="bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-200 dark:border-red-800 p-6 opacity-75"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 line-through">
+                          {employee.name}
+                        </h3>
+                        <p className="text-sm text-zinc-500 capitalize">{employee.role}</p>
+                        <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                          Usuario eliminado
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-zinc-500">
+                          {employeeSchedules.length} horarios
+                        </span>
+                        <button
+                          onClick={() => handleReactivateUser(employee.id, employee.name)}
+                          className="p-2 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/20 rounded-lg"
+                          title="Reactivar usuario"
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Horarios del empleado eliminado */}
+                    {employeeSchedules.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                          Horarios (se preservarán al reactivar):
+                        </h4>
+                        <div className="grid gap-2">
+                          {employeeSchedules.map(schedule => (
+                            <div 
+                              key={schedule.id}
+                              className="flex items-center gap-3 p-3 bg-zinc-100 dark:bg-zinc-700/30 rounded-lg opacity-75"
+                            >
+                              <Calendar className="w-4 h-4 text-zinc-500" />
+                              <span className="text-sm font-medium">
+                                {days.find(d => d.value === schedule.dayOfWeek)?.name}
+                              </span>
+                              <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                                {schedule.startTime} - {schedule.endTime}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Modal de formulario de horarios */}
       {showScheduleForm && (
         <ScheduleFormModal
           userId={selectedUserId || editingSchedule?.userId || ''}
           editingSchedule={editingSchedule}
-          employees={userProfiles}
+          employees={activeEmployees} // Solo mostrar empleados activos
           onClose={() => {
             setShowScheduleForm(false);
             setSelectedUserId('');

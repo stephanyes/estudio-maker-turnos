@@ -114,6 +114,7 @@ export type UserProfile = {
   businessId: string;
   role: 'admin' | 'staff';
   name: string;
+  status: 'active' | 'inactive' | 'deleted';
   createdAt: string;
 };
 
@@ -1109,6 +1110,7 @@ function toUserProfile(data: any): UserProfile {
     businessId: data.business_id,
     role: data.role,
     name: data.name,
+    status: data.status || 'active', // Agregar campo status con valor por defecto
     createdAt: data.created_at,
   };
 }
@@ -1123,6 +1125,7 @@ export const userProfiles = {
       .order('name');
     
     if (error) throw error;
+    console.log('🔍 userProfiles.toArray() - raw data:', data);
     return data.map(toUserProfile);
   },
 

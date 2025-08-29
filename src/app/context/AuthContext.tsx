@@ -9,6 +9,7 @@ export type UserProfile = {
   business_id: string;
   role: 'admin' | 'staff';
   name: string;
+  status: 'active' | 'inactive' | 'deleted';
   created_at: string;
 };
 
@@ -21,6 +22,12 @@ type AuthContextType = {
   signUp: (email: string, password: string, name: string, role?: 'admin' | 'staff') => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  // 🆕 Nuevas funciones de administración
+  createUserByAdmin: (email: string, password: string, name: string, role: 'admin' | 'staff') => Promise<{ error: any }>;
+  updateUserRole: (userId: string, newRole: 'admin' | 'staff') => Promise<{ error: any }>;
+  reactivateUser: (userId: string) => Promise<{ error: any }>;
+  deleteUser: (userId: string) => Promise<{ error: any }>;
+  getAllUsers: () => Promise<{ data: UserProfile[] | null; error: any }>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -150,6 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         business_id: businessId,
         role,
         name,
+        status: 'active', // Usuario activo por defecto
       }]);
 
     if (profileError) {
@@ -170,6 +178,133 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  // 🆕 Funciones de administración
+  const createUserByAdmin = async (email: string, password: string, name: string, role: 'admin' | 'staff') => {
+    try {
+      // Verificar que el usuario actual sea admin
+      if (userProfile?.role !== 'admin') {
+        return { error: { message: 'Solo los administradores pueden crear usuarios' } };
+      }
+
+      // Crear usuario en Supabase Auth
+      const { data, error } = await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true, // Auto-confirmar email para desarrollo
+        user_metadata: { name, role }
+      });
+
+      if (error) return { error };
+
+      if (data.user) {
+        // Crear perfil de usuario
+        await createUserProfile(data.user.id, name, role);
+        return { error: null };
+      }
+
+      return { error: { message: 'Error al crear usuario' } };
+    } catch (error) {
+      return { error };
+    }
+  };
+
+  const updateUserRole = async (userId: string, newRole: 'admin' | 'staff') => {
+    try {
+      // Verificar que el usuario actual sea admin
+      if (userProfile?.role !== 'admin') {
+        return { error: { message: 'Solo los administradores pueden cambiar roles' } };
+      }
+
+      // No permitir cambiar el rol del usuario actual
+      if (userId === user?.id) {
+        return { error: { message: 'No puedes cambiar tu propio rol' } };
+      }
+
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ role: newRole })
+        .eq('id', userId);
+
+      if (error) return { error };
+
+      return { error: null };
+    } catch (error) {
+      return { error };
+    }
+  };
+
+  const reactivateUser = async (userId: string) => {
+    try {
+      // Verificar que el usuario actual sea admin
+      if (userProfile?.role !== 'admin') {
+        return { error: { message: 'Solo los administradores pueden reactivar usuarios' } };
+      }
+
+      // Reactivar usuario cambiando su status a 'active'
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ status: 'active' })
+        .eq('id', userId);
+
+      if (error) return { error };
+
+      return { error: null };
+    } catch (error) {
+      console.error('Error in reactivateUser:', error);
+      return { error: { message: 'Error inesperado al reactivar usuario' } };
+    }
+  };
+
+  const deleteUser = async (userId: string) => {
+    try {
+      // Verificar que el usuario actual sea admin
+      if (userProfile?.role !== 'admin') {
+        return { error: { message: 'Solo los administradores pueden eliminar usuarios' } };
+      }
+
+      // No permitir eliminar el usuario actual
+      if (userId === user?.id) {
+        return { error: { message: 'No puedes eliminar tu propia cuenta' } };
+      }
+
+      // Soft delete: marcar usuario como eliminado en lugar de eliminarlo físicamente
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .update({ status: 'deleted' })
+        .eq('id', userId);
+
+      if (profileError) {
+        console.error('Error soft deleting user profile:', profileError);
+        return { error: { message: 'Error al eliminar el usuario' } };
+      }
+
+      return { error: null };
+    } catch (error) {
+      console.error('Error in deleteUser:', error);
+      return { error: { message: 'Error inesperado al eliminar usuario' } };
+    }
+  };
+
+  const getAllUsers = async () => {
+    try {
+      // Verificar que el usuario actual sea admin
+      if (userProfile?.role !== 'admin') {
+        return { data: null, error: { message: 'Solo los administradores pueden ver todos los usuarios' } };
+      }
+
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) return { data: null, error };
+
+      return { data: data as UserProfile[], error: null };
+    } catch (error) {
+      return { data: null, error };
+    }
+  };
+
   const value = {
     user,
     userProfile,
@@ -179,6 +314,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signUp,
     signOut,
     refreshProfile,
+    // 🆕 Agregar nuevas funciones
+    createUserByAdmin,
+    updateUserRole,
+    reactivateUser,
+    deleteUser,
+    getAllUsers,
   };
 
   return (
@@ -213,6 +354,7 @@ export const usePermissions = () => {
     canImportData: isAdmin,
     canResetData: isAdmin,
     canAccessDev: isAdmin,
+    canAccessAdmin: isAdmin, // 🆕 Nuevo permiso para dashboard de admin
     
     // 👥 Admin y Staff pueden gestionar precios
     canManagePrices: true, // Cambiado: Staff también puede ver/gestionar precios

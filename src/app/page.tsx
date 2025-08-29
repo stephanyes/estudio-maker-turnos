@@ -16,6 +16,7 @@ import DailyRevenueView from './components/DailyRevenueView';
 import TrafficView from './components/TrafficView';
 import StaffManagementView from './components/StaffManagementView';
 import TimeMetricsView from './components/TimeMetricsView';
+import AdminDashboard from './components/AdminDashboard';
 import { ProtectedRoute } from './components/Auth/LoginForm';
 import { usePermissions, useAuth } from './context/AuthContext';
 
@@ -36,10 +37,11 @@ import {
   Calendar,
   LogOut,
   Menu,
-  X
+  X,
+  Shield
 } from "lucide-react";
 
-type View = 'week' | 'prices' | 'stats' | 'clients' | 'followup' | 'daily' | 'traffic' | 'staff' | 'timing' | 'dev';
+type View = 'week' | 'prices' | 'stats' | 'clients' | 'followup' | 'daily' | 'traffic' | 'staff' | 'timing' | 'dev' | 'admin';
 
 export default function Home() {
   const [view, setView] = useState<View>('week');
@@ -80,6 +82,7 @@ export default function Home() {
   const handleTraffic = () => setView('traffic');
   const handleStaff = () => setView('staff');
   const handleTiming = () => setView('timing');
+  const handleAdmin = () => setView('admin');
 
   return (
     <ProtectedRoute>
@@ -278,6 +281,21 @@ export default function Home() {
                   <Settings size={16} />
                   <span>Dev</span>
                 </button>
+
+                {/* Dashboard de Administración - Solo Admin */}
+                {permissions.canAccessAdmin && (
+                  <button
+                    onClick={handleAdmin}
+                    className={`flex-1 sm:flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
+                            hover:bg-zinc-100
+                            ${view === 'admin' ? 'bg-purple-100 text-purple-700' : ''}
+                            border border-purple-200`}
+                    title="Panel de administración"
+                  >
+                    <Shield size={16} />
+                    <span>Admin</span>
+                  </button>
+                )}
             </nav>
 
             <div className="sm:ml-auto flex items-center gap-2">
@@ -392,7 +410,7 @@ export default function Home() {
               </div>
 
               {/* Herramientas Admin */}
-              {(permissions.canViewTraffic || permissions.canManagePrices || permissions.canViewStats || permissions.canManageStaff) && (
+              {(permissions.canViewTraffic || permissions.canManagePrices || permissions.canViewStats || permissions.canManageStaff || permissions.canAccessAdmin) && (
                 <div className="space-y-2">
                   <h3 className="text-sm font-semibold text-zinc-700 border-b border-zinc-100 pb-1">Admin</h3>
                   <div className="grid grid-cols-1 gap-2">
@@ -458,6 +476,17 @@ export default function Home() {
                       <Settings size={16} />
                       <span>Dev</span>
                     </button>
+                    {permissions.canAccessAdmin && (
+                      <button
+                        onClick={() => { handleAdmin(); setMobileMenuOpen(false); }}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm ${
+                          view === 'admin' ? 'bg-purple-100 text-purple-700' : 'hover:bg-zinc-50'
+                        } border border-purple-200`}
+                      >
+                        <Shield size={16} />
+                        <span>Panel Admin</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
@@ -558,6 +587,13 @@ export default function Home() {
         {view === 'timing' && permissions.canViewTiming && (
           <div className="card p-4">
             <TimeMetricsView />
+          </div>
+        )}
+
+        {/* Dashboard de Administración - Solo Admin */}
+        {view === 'admin' && permissions.canAccessAdmin && (
+          <div className="card p-4">
+            <AdminDashboard />
           </div>
         )}
       </main>
