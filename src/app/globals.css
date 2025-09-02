@@ -288,3 +288,87 @@ body {
   }
 }
 
+/* ======================================== */
+/* FIXES DE CONTRASTE Y LEGIBILIDAD - IPHONE */
+/* ======================================== */
+
+/* Fix para nombres de clientes invisibles */
+@supports (-webkit-touch-callout: none) {
+  /* Solo Safari en iOS */
+  
+  /* Asegurar que los nombres de clientes sean legibles */
+  input[type="text"], 
+  input[type="search"],
+  .client-name,
+  .client-input {
+    color: #1f2937 !important; /* gray-800 */
+    background-color: #ffffff !important;
+    border: 1px solid #d1d5db !important; /* gray-300 */
+  }
+  
+  /* Fix para campos de texto con fondo negro */
+  input[type="text"][style*="background-color: black"],
+  input[type="text"][style*="background: black"] {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+  }
+  
+  /* Fix para modales con fondo muy oscuro */
+  .modal-content,
+  .dialog-content,
+  [role="dialog"] {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+  }
+  
+  /* Fix para texto en modales */
+  .modal-content *,
+  .dialog-content *,
+  [role="dialog"] * {
+    color: #1f2937 !important;
+  }
+  
+  /* Fix para botones en modales */
+  .modal-content button,
+  .dialog-content button,
+  [role="dialog"] button {
+    background-color: #3b82f6 !important; /* blue-500 */
+    color: #ffffff !important;
+    border: 1px solid #2563eb !important; /* blue-600 */
+  }
+  
+  /* Fix para botones de cancelar */
+  .modal-content button[class*="cancel"],
+  .dialog-content button[class*="cancel"],
+  [role="dialog"] button[class*="cancel"] {
+    background-color: #6b7280 !important; /* gray-500 */
+    color: #ffffff !important;
+    border: 1px solid #4b5563 !important; /* gray-600 */
+  }
+  
+  /* Fix para botones de eliminar */
+  .modal-content button[class*="delete"],
+  .dialog-content button[class*="delete"],
+  [role="dialog"] button[class*="delete"] {
+    background-color: #ef4444 !important; /* red-500 */
+    color: #ffffff !important;
+    border: 1px solid #dc2626 !important; /* red-600 */
+  }
+}
+
+/* Fix general para mejorar contraste */
+@media (max-width: 768px) {
+  /* Asegurar legibilidad en móviles */
+  input, select, textarea {
+    color: #1f2937 !important;
+    background-color: #ffffff !important;
+  }
+  
+  /* Fix para campos con texto negro sobre fondo negro */
+  input[style*="color: black"][style*="background: black"],
+  input[style*="color: black"][style*="background-color: black"] {
+    color: #1f2937 !important;
+    background-color: #ffffff !important;
+  }
+}
+
