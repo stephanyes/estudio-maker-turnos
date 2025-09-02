@@ -7,6 +7,7 @@ import { DataProvider } from './context/DataProvider';
 import { DataLoadingProvider } from './components/DataLoadingProvider';
 import DataProviderDebug from './components/DataProviderDebug';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import InstallPWAButton from './components/InstallPWAButton';
 
 
 export const metadata: Metadata = {
@@ -15,8 +16,8 @@ export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',
   themeColor: '#0ea5e9',
   icons: {
-    icon: '/icons/icon-192.png',
-    apple: '/icons/icon-192.png'
+    icon: '/icono.png',
+    apple: '/icono.png'
   }
 };
 
@@ -52,6 +53,7 @@ export default function RootLayout({
             </QueryProvider>
           </AuthProvider>
         </ErrorBoundary>
+        <InstallPWAButton />
       </body>
     </html>
   );

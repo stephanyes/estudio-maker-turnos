@@ -74,21 +74,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Inicializar sesión al cargar la app
   useEffect(() => {
+    let isMounted = true;
+    
     const initializeAuth = async () => {
       try {
+        console.log('🔐 AuthContext: Iniciando inicialización de autenticación');
+        
         // Obtener sesión actual
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('❌ AuthContext: Error obteniendo sesión:', sessionError);
+          if (isMounted) {
+            setLoading(false);
+          }
+          return;
+        }
+
+        console.log('🔐 AuthContext: Sesión obtenida:', !!session);
         setSession(session);
 
         if (session?.user) {
+          console.log('🔐 AuthContext: Usuario encontrado, cargando perfil...');
           setUser(session.user);
           const profile = await loadUserProfile(session.user.id);
-          setUserProfile(profile);
+          if (isMounted) {
+            setUserProfile(profile);
+            console.log('🔐 AuthContext: Perfil cargado:', !!profile);
+          }
+        } else {
+          console.log('🔐 AuthContext: No hay usuario en sesión');
         }
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        console.error('❌ AuthContext: Error en initializeAuth:', error);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+          console.log('🔐 AuthContext: Inicialización completada, loading=false');
+        }
       }
     };
 
@@ -97,22 +120,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Escuchar cambios de autenticación
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('🔐 AuthContext: Auth state change:', event, !!session?.user);
+        
+        if (!isMounted) return;
+        
         setSession(session);
         
         if (session?.user) {
           setUser(session.user);
           const profile = await loadUserProfile(session.user.id);
-          setUserProfile(profile);
+          if (isMounted) {
+            setUserProfile(profile);
+          }
         } else {
           setUser(null);
           setUserProfile(null);
         }
         
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, name: string, role: 'admin' | 'staff' = 'admin') => {

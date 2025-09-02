@@ -190,12 +190,29 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // 🎯 CONDICIÓN CRÍTICA: Solo hacer queries si el usuario está autenticado y el perfil está cargado
   const isAuthenticated = !!user && !authLoading && !!userProfile;
   
+  console.log('📊 DataProvider: Estado de autenticación:', {
+    hasUser: !!user,
+    authLoading,
+    hasProfile: !!userProfile,
+    isAuthenticated
+  });
+  
   // 🎯 QUERIES PRINCIPALES con paginación y mejores configuraciones
   
   // 1. Datos básicos de la base de datos - usar simple query por ahora
   const appointmentsQuery = useQuery({
     queryKey: ['appointments', 'all'],
-    queryFn: () => db.appointments.toArray(),
+    queryFn: async () => {
+      console.log('📊 DataProvider: Cargando appointments...');
+      try {
+        const result = await db.appointments.toArray();
+        console.log('📊 DataProvider: Appointments cargados:', result.length);
+        return result;
+      } catch (error) {
+        console.error('❌ DataProvider: Error cargando appointments:', error);
+        throw error;
+      }
+    },
     staleTime: 5 * 60 * 1000, // 5 minutos
     gcTime: 15 * 60 * 1000, // 15 minutos
     refetchOnWindowFocus: false,
@@ -207,7 +224,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const clientsQuery = useQuery({
     queryKey: ['clients', 'all'],
-    queryFn: () => db.clients.toArray(),
+    queryFn: async () => {
+      console.log('📊 DataProvider: Cargando clients...');
+      try {
+        const result = await db.clients.toArray();
+        console.log('📊 DataProvider: Clients cargados:', result.length);
+        return result;
+      } catch (error) {
+        console.error('❌ DataProvider: Error cargando clients:', error);
+        throw error;
+      }
+    },
     staleTime: 10 * 60 * 1000, // 10 minutos
     gcTime: 30 * 60 * 1000, // 30 minutos
     refetchOnWindowFocus: false,
@@ -219,7 +246,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const servicesQuery = useQuery({
     queryKey: ['services', 'all'],
-    queryFn: () => db.services.toArray(),
+    queryFn: async () => {
+      console.log('📊 DataProvider: Cargando services...');
+      try {
+        const result = await db.services.toArray();
+        console.log('📊 DataProvider: Services cargados:', result.length);
+        return result;
+      } catch (error) {
+        console.error('❌ DataProvider: Error cargando services:', error);
+        throw error;
+      }
+    },
     staleTime: 15 * 60 * 1000, // 15 minutos
     gcTime: 60 * 60 * 1000, // 1 hora
     enabled: isAuthenticated, // 🎯 Solo ejecutar si está autenticado
@@ -231,7 +268,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const userProfilesQuery = useQuery({
     queryKey: ['userProfiles', 'all'],
-    queryFn: () => db.userProfiles.toArray(),
+    queryFn: async () => {
+      console.log('📊 DataProvider: Cargando userProfiles...');
+      try {
+        const result = await db.userProfiles.toArray();
+        console.log('📊 DataProvider: UserProfiles cargados:', result.length);
+        return result;
+      } catch (error) {
+        console.error('❌ DataProvider: Error cargando userProfiles:', error);
+        throw error;
+      }
+    },
     staleTime: 10 * 60 * 1000, // 10 minutos
     gcTime: 30 * 60 * 1000, // 30 minutos
     refetchOnWindowFocus: false,
@@ -243,7 +290,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const staffSchedulesQuery = useQuery({
     queryKey: ['staffSchedules', 'all'],
-    queryFn: () => db.staffSchedules.toArray(),
+    queryFn: async () => {
+      console.log('📊 DataProvider: Cargando staffSchedules...');
+      try {
+        const result = await db.staffSchedules.toArray();
+        console.log('📊 DataProvider: StaffSchedules cargados:', result.length);
+        return result;
+      } catch (error) {
+        console.error('❌ DataProvider: Error cargando staffSchedules:', error);
+        throw error;
+      }
+    },
     staleTime: 5 * 60 * 1000, // 5 minutos
     gcTime: 15 * 60 * 1000, // 15 minutos
     refetchOnWindowFocus: false,
@@ -255,7 +312,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const walkInsQuery = useQuery({
     queryKey: ['walkIns', 'all'],
-    queryFn: () => db.walkIns.toArray(),
+    queryFn: async () => {
+      console.log('📊 DataProvider: Cargando walkIns...');
+      try {
+        const result = await db.walkIns.toArray();
+        console.log('📊 DataProvider: WalkIns cargados:', result.length);
+        return result;
+      } catch (error) {
+        console.error('❌ DataProvider: Error cargando walkIns:', error);
+        throw error;
+      }
+    },
     staleTime: 2 * 60 * 1000, // 2 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos
     refetchOnWindowFocus: false,

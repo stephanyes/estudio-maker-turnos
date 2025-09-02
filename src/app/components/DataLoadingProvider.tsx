@@ -16,62 +16,38 @@ export function DataLoadingProvider({
   const { loading, hasErrors, errors, retry, canRetry, isCoreDataReady } = useData();
   const { user, loading: authLoading } = useAuth();
   
-  // 🧪 TEMPORAL: Forzar pantalla de carga para testing
-  // const forceLoading = true;
-  // if (forceLoading) {
-  //   console.log('🧪 Forzando pantalla de carga para testing');
-  //   return <DefaultLoadingFallback />;
-  // }
+  console.log('🔄 DataLoadingProvider: Estado actual:', {
+    hasUser: !!user,
+    authLoading,
+    loadingCore: loading.core,
+    hasErrors,
+    isCoreDataReady,
+    willShowLoading: loading.core || !isCoreDataReady,
+    willShowError: hasErrors,
+    willShowApp: !hasErrors && isCoreDataReady
+  });
   
   // 🎯 CONDICIÓN CRÍTICA: Si no está autenticado, mostrar la app normalmente
   // (el login se maneja en ProtectedRoute)
   if (!user && !authLoading) {
+    console.log('🔄 DataLoadingProvider: No hay usuario, mostrando app');
     return <>{children}</>;
   }
 
-  // Logging para debug con lógica corregida
-  const errorCount = Object.values(errors).filter(e => e !== null && e !== undefined).length;
-  const errorKeys = Object.entries(errors)
-    .filter(([_, error]) => error !== null && error !== undefined)
-    .map(([key, _]) => key);
-  
-  // console.log('🔍 DataLoadingProvider State:', {
-  //   loading,
-  //   hasErrors,
-  //   isCoreDataReady,
-  //   errorCount,
-  //   errorKeys,
-  //   user,
-  //   authLoading,
-  //   willShowLoading: loading.core || !isCoreDataReady,
-  //   willShowApp: !hasErrors && isCoreDataReady
-  // });
-
-  // Logging para detectar cambios de estado
-  // console.log('🔍 DataLoadingProvider Render:', {
-  //   hasErrors,
-  //   isCoreDataReady,
-  //   willShowError: hasErrors,
-  //   willShowLoading: loading.core || !isCoreDataReady,
-  //   willShowApp: !hasErrors && isCoreDataReady
-  // });
+  // Si está cargando autenticación, mostrar loading
+  if (authLoading) {
+    console.log('🔄 DataLoadingProvider: Auth loading, mostrando loading');
+    return <>{fallback}</>;
+  }
 
   // Si hay errores críticos, mostrar pantalla de error
   if (hasErrors) {
+    console.log('🔄 DataLoadingProvider: Hay errores, mostrando error screen');
     const criticalErrors = Object.entries(errors)
       .filter(([key, error]) => error && ['appointments', 'clients', 'services'].includes(key));
     
     const isCriticalError = criticalErrors.length > 0;
     
-    // console.log('🚨 DataLoadingProvider Error State:', {
-    //   hasErrors,
-    //   isCriticalError,
-    //   criticalErrors: criticalErrors.map(([key, error]) => `${key}: ${error?.message}`),
-    //   allErrors: Object.entries(errors)
-    //     .filter(([_, error]) => error)
-    //     .map(([key, error]) => `${key}: ${error?.message}`)
-    // });
-
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-red-50">
         <div className="text-center p-8 max-w-md">
@@ -149,173 +125,12 @@ export function DataLoadingProvider({
 
   // Si los datos principales no están listos, mostrar loading
   if (loading.core || !isCoreDataReady) {
+    console.log('🔄 DataLoadingProvider: Core data loading, mostrando loading');
     return <>{fallback}</>;
   }
 
-  // Si hay datos principales pero otros están cargando, mostrar loading parcial
-  if (loading.any && !loading.core) {
-          return (
-        <div style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: '#f5f5dc',
-          fontFamily: 'Arial, sans-serif'
-        }}>
-          <div style={{
-            textAlign: 'center',
-            background: 'linear-gradient(135deg, #fefefe 0%, #f8f8f0 100%)',
-            borderRadius: '24px',
-            padding: '48px',
-            boxShadow: '0 30px 60px rgba(0, 0, 0, 0.25), 0 10px 20px rgba(0, 0, 0, 0.15)',
-            border: '2px solid rgba(0, 0, 0, 0.1)',
-            maxWidth: '420px',
-            width: '90%',
-            position: 'relative'
-          }}>
-            {/* Efecto de brillo sutil */}
-            <div style={{
-              position: 'absolute',
-              top: '0',
-              left: '0',
-              right: '0',
-              height: '2px',
-              background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%)',
-              borderRadius: '24px 24px 0 0'
-            }}></div>
-            {/* Logo más pequeño */}
-            <div style={{ position: 'relative', marginBottom: '24px' }}>
-              <div style={{
-                width: '64px',
-                height: '64px',
-                margin: '0 auto',
-                background: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)',
-                borderRadius: '12px',
-                boxShadow: '0 8px 20px rgba(0, 0, 0, 0.1)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  backgroundColor: 'white',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <span style={{
-                    fontSize: '20px',
-                    fontWeight: 'bold',
-                    color: '#0ea5e9'
-                  }}>S</span>
-                </div>
-              </div>
-              {/* Anillo de carga más sutil */}
-              <div style={{
-                position: 'absolute',
-                inset: '0',
-                width: '64px',
-                height: '64px',
-                margin: '0 auto',
-                border: '3px solid #e0f2fe',
-                borderTop: '3px solid #0ea5e9',
-                borderRadius: '12px',
-                animation: 'spin 1s linear infinite'
-              }}></div>
-            </div>
-            
-            {/* Texto principal */}
-            <div style={{ marginBottom: '24px', textAlign: 'center' }}>
-              <h2 style={{
-                fontSize: '24px',
-                fontWeight: 'bold',
-                background: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                marginBottom: '8px',
-                textAlign: 'center'
-              }}>
-                Datos principales listos
-              </h2>
-              <p style={{
-                color: '#475569',
-                fontWeight: '500',
-                fontSize: '14px',
-                textAlign: 'center'
-              }}>
-                Cargando datos adicionales...
-              </p>
-            </div>
-            
-            {/* Lista de elementos cargando */}
-            <div style={{ marginBottom: '24px', textAlign: 'center' }}>
-              {loading.staff && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '8px', width: '100%' }}>
-                  <div style={{
-                    width: '8px',
-                    height: '8px',
-                    backgroundColor: '#0ea5e9',
-                    borderRadius: '50%',
-                    animation: 'pulse 2s ease-in-out infinite',
-                    flexShrink: 0
-                  }}></div>
-                  <span style={{ fontSize: '14px', color: '#64748b', textAlign: 'center' }}>Cargando empleados...</span>
-                </div>
-              )}
-              {loading.realtime && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '8px', width: '100%' }}>
-                  <div style={{
-                    width: '8px',
-                    height: '8px',
-                    backgroundColor: '#0ea5e9',
-                    borderRadius: '50%',
-                    animation: 'pulse 2s ease-in-out infinite',
-                    flexShrink: 0
-                  }}></div>
-                  <span style={{ fontSize: '14px', color: '#64748b', textAlign: 'center' }}>Cargando datos en tiempo real...</span>
-                </div>
-              )}
-              {loading.analytics && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '8px', width: '100%' }}>
-                  <div style={{
-                    width: '8px',
-                    height: '8px',
-                    backgroundColor: '#0ea5e9',
-                    borderRadius: '50%',
-                    animation: 'pulse 2s ease-in-out infinite',
-                    flexShrink: 0
-                  }}></div>
-                  <span style={{ fontSize: '14px', color: '#64748b', textAlign: 'center' }}>Cargando estadísticas...</span>
-                </div>
-              )}
-            </div>
-            
-            {/* Indicador de progreso */}
-            <div style={{
-              width: '160px',
-              height: '4px',
-              backgroundColor: '#e2e8f0',
-              borderRadius: '4px',
-              overflow: 'hidden',
-              margin: '0 auto'
-            }}>
-              <div style={{
-                height: '100%',
-                background: 'linear-gradient(90deg, #0ea5e9 0%, #2563eb 100%)',
-                borderRadius: '4px',
-                animation: 'pulse 2s ease-in-out infinite'
-              }}></div>
-            </div>
-          </div>
-        </div>
-      );
-  }
-
   // Todo listo, mostrar la aplicación
-  // console.log('✅ DataLoadingProvider: All data ready, showing app');
+  console.log('✅ DataLoadingProvider: All data ready, showing app');
   return <>{children}</>;
 }
 
