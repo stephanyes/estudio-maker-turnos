@@ -647,8 +647,8 @@ export default function WeekViewRBC({ onChanged }: Props) {
           defaultView={Views.WEEK}
           view={Views.WEEK}
           views={[Views.WEEK, Views.DAY]}
-          step={15}
-          timeslots={4}
+                  step={30}
+        timeslots={2}
           min={new Date(2024, 0, 1, 9, 0)} // 9:00 AM
           max={new Date(2024, 0, 1, 22, 0)} // 10:00 PM
           date={refDate.toJSDate()}

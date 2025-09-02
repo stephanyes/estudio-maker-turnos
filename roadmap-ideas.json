@@ -1,0 +1,222 @@
+{
+  "project": "Estudio Maker - Roadmap de Ideas",
+  "lastUpdated": "2024-12-19",
+  "version": "1.0.0",
+  "description": "Registro de ideas y cambios solicitados por el cliente para mejorar la aplicación",
+  
+  "highPriority": {
+    "businessModelChanges": {
+      "title": "Cambios en el Modelo de Negocio",
+      "description": "Ajustes necesarios para reflejar que NO hay walk-ins, todo es por turno",
+      "status": "pending",
+      "tasks": [
+        "Remover/ocultar funcionalidad de walk-ins",
+        "Ajustar flujo para que todo sea por turno programado",
+        "Actualizar documentación y mensajes de usuario"
+      ]
+    },
+    
+    "paymentSimplification": {
+      "title": "Simplificación del Sistema de Cobro",
+      "description": "Hacer más sencillo el proceso de cobro, removiendo la complejidad de servicios separados",
+      "status": "pending",
+      "tasks": [
+        "Remover/ocultar sección de servicios separada",
+        "Integrar selección de servicio directamente en el evento del turno",
+        "Implementar dropdown para selección de servicio en el evento",
+        "Agregar campo de monto cobrado en el momento",
+        "Simplificar interfaz de cobro"
+      ],
+      "notes": "Los servicios como color y cauterización dependen de variables (color, intensidad, largo del pelo) - no hay precio fijo. Solo el corte tiene precio fijo como referencia para señas."
+    },
+    
+    "depositSystem": {
+      "title": "Sistema de Señas para Nuevos Clientes",
+      "description": "Implementar sistema donde los clientes nuevos paguen una seña por adelantado",
+      "status": "pending",
+      "tasks": [
+        "Identificar clientes nuevos (primera cita)",
+        "Implementar flujo de seña obligatoria para nuevos clientes",
+        "Crear sistema de seguimiento de señas",
+        "Integrar con el sistema de cobro simplificado"
+      ]
+    }
+  },
+  
+  "mediumPriority": {
+    "priceScraping": {
+      "title": "Web Scraping de Precios de Competencia",
+      "description": "Crear sistema para obtener precios de la competencia automáticamente",
+      "status": "pending",
+      "sources": [
+        {
+          "name": "Cerini",
+          "url": "https://cerini.net/servicios/",
+          "difficulty": "medium",
+          "notes": "Página web estática, relativamente fácil de scrapear"
+        },
+        {
+          "name": "Mala Peluquería",
+          "url": "https://www.malapeluqueria.com/lista-de-precios",
+          "difficulty": "high",
+          "notes": "Genera PDF dinámicamente, será más complejo de scrapear"
+        }
+      ],
+      "tasks": [
+        "Crear pantalla dedicada para mostrar precios de competencia",
+        "Implementar sistema de web scraping",
+        "Configurar actualizaciones automáticas de precios",
+        "Crear interfaz para visualizar y comparar precios",
+        "Implementar sistema de alertas cuando cambien precios"
+      ],
+      "technicalNotes": "Aunque será difícil, es factible. Considerar usar Puppeteer o similar para PDFs."
+    },
+    
+    "notesSystem": {
+      "title": "Sistema de Notas Mejorado",
+      "description": "Cambiar de un solo bloque de texto a un sistema de notas listadas",
+      "status": "pending",
+      "currentSystem": "Un solo campo de texto donde se van agregando notas",
+      "newSystem": "Lista de notas individuales con timestamp",
+      "tasks": [
+        "Rediseñar estructura de notas en la base de datos",
+        "Crear sistema de notas individuales con fecha/hora",
+        "Implementar ordenamiento: notas más nuevas arriba",
+        "Crear interfaz para agregar nuevas notas",
+        "Mantener historial completo de notas por cliente",
+        "Implementar búsqueda y filtrado de notas"
+      ],
+      "benefits": [
+        "Mejor organización de información",
+        "Facilita seguimiento de evolución del cliente",
+        "Permite búsqueda específica de notas",
+        "Historial más claro y ordenado"
+      ]
+    }
+  },
+  
+  "lowPriority": {
+    "uiImprovements": {
+      "title": "Mejoras de Interfaz",
+      "description": "Ajustes menores de UX/UI basados en feedback",
+      "status": "pending",
+      "tasks": [
+        "Revisar y mejorar flujo de creación de turnos",
+        "Optimizar formularios de clientes",
+        "Mejorar responsive design en móviles",
+        "Agregar tooltips y ayuda contextual"
+      ]
+    },
+    
+    "reporting": {
+      "title": "Sistema de Reportes",
+      "description": "Reportes adicionales para análisis de negocio",
+      "status": "pending",
+      "tasks": [
+        "Reporte de clientes nuevos vs recurrentes",
+        "Análisis de servicios más populares",
+        "Reporte de señas y pagos pendientes",
+        "Métricas de ocupación y eficiencia"
+      ]
+    }
+  },
+  
+  "completed": {
+    "pwaImplementation": {
+      "title": "Implementación de PWA",
+      "description": "Convertir la aplicación web en Progressive Web App",
+      "status": "completed",
+      "date": "2024-12-19",
+      "features": [
+        "Service Worker para funcionalidad offline",
+        "Manifiesto para instalación",
+        "Botón de instalación para iOS y Android",
+        "Funcionalidad offline completa"
+      ]
+    },
+    
+    "calendarFormatting": {
+      "title": "Ajuste de Formato del Calendario",
+      "description": "Cambiar intervalos de tiempo en WeekView2 de 15 a 30 minutos",
+      "status": "completed",
+      "date": "2024-12-19",
+      "currentFormat": "Rangos de 15 minutos",
+      "newFormat": "Rangos de 30 minutos mínimo",
+      "changesMade": [
+        "Cambiado step de 15 a 30 minutos",
+        "Ajustado timeslots de 4 a 2 para mantener proporción visual",
+        "Mantenido horario de 9:00 AM a 10:00 PM"
+      ],
+      "benefits": [
+        "Mejor legibilidad del calendario",
+        "Más espacio para mostrar información de turnos",
+        "Intervalos más prácticos para servicios de peluquería"
+      ]
+    }
+  },
+  
+  "technicalConsiderations": {
+    "databaseChanges": [
+      "Modificar estructura de servicios para integrar con turnos",
+      "Agregar campos de seña y estado de pago",
+      "Rediseñar sistema de notas",
+      "Considerar migración de datos existentes"
+    ],
+    "apiChanges": [
+      "Actualizar endpoints para nuevo flujo de cobro",
+      "Crear APIs para sistema de señas",
+      "Implementar web scraping endpoints",
+      "Modificar sistema de notas"
+    ],
+    "frontendChanges": [
+      "Rediseñar formularios de turnos",
+      "Crear nueva pantalla de precios de competencia",
+      "Implementar sistema de notas mejorado",
+      "Actualizar flujo de cobro"
+    ]
+  },
+  
+  "nextSteps": [
+    "Priorizar cambios de alto impacto (modelo de negocio)",
+    "Crear mockups de nueva interfaz de cobro",
+    "Planificar migración de base de datos",
+    "Investigar tecnologías para web scraping",
+    "Definir estructura de nuevo sistema de notas"
+  ],
+  
+  "clientFeedback": {
+    "keyInsights": [
+      "No hay walk-ins - todo es por turno programado",
+      "Sistema de cobro actual es muy complejo",
+      "Necesitan flexibilidad en precios (no fijos para color/cauterización)",
+      "Solo el corte tiene precio fijo como referencia",
+      "Clientes nuevos deben pagar seña por adelantado",
+      "Sistema de notas actual no es práctico para el negocio"
+    ],
+    "businessPriorities": [
+      "Simplificar proceso de cobro",
+      "Implementar sistema de señas",
+      "Mantener precios competitivos",
+      "Mejorar seguimiento de clientes",
+      "Optimizar flujo de trabajo"
+    ]
+  },
+  
+  "questionsToInvestigate": {
+    "eventEditingRule": {
+      "title": "Regla de Edición de Eventos",
+      "question": "¿Existía una regla que impedía editar eventos después de X horas?",
+      "status": "RESOLVED",
+      "description": "SÍ existe una regla implementada: no se pueden cancelar eventos de más de 24 horas",
+      "currentRule": "No se pueden cancelar eventos de más de 24 horas. Solo se pueden marcar como completados.",
+      "location": "src/lib/queries.ts - useUpdateAppointmentStatus",
+      "implementation": [
+        "Validación en handleEventDrop: no mover eventos al pasado",
+        "Validación en handleEventDrop: no mover a tiempo pasado en el mismo día",
+        "Regla de negocio: eventos > 24 horas solo pueden marcarse como 'done', no 'cancelled'"
+      ],
+      "notes": "La regla está implementada y funcionando correctamente. Se aplica tanto a citas únicas como recurrentes."
+    }
+  }
+}
+git
