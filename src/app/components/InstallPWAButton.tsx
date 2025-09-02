@@ -8,11 +8,22 @@ export default function InstallPWAButton() {
   const [showInstallButton, setShowInstallButton] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     // Detectar si es iOS
     const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     setIsIOS(iOS);
+
+    // Detectar si es móvil
+    const checkIsMobile = () => {
+      const isMobileByWidth = window.innerWidth < 768;
+      const isMobileByAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsMobile(isMobileByWidth || isMobileByAgent);
+    };
+
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
 
     // Escuchar el evento beforeinstallprompt (solo funciona en Chrome/Edge)
     const handler = (e: Event) => {
@@ -25,6 +36,7 @@ export default function InstallPWAButton() {
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('resize', checkIsMobile);
     };
   }, []);
 
@@ -51,6 +63,11 @@ export default function InstallPWAButton() {
   const handleIOSInstall = () => {
     setShowIOSInstructions(!showIOSInstructions);
   };
+
+  // Si es móvil, no mostrar botón de instalación PWA
+  if (isMobile) {
+    return null;
+  }
 
   // Si es iOS, mostrar botón de instrucciones
   if (isIOS) {
