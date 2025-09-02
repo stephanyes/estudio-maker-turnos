@@ -194,7 +194,17 @@
         "Indicadores visuales claros: 'Click para ver detalles' y 'Click para cerrar'",
         "Eliminados eventos touch/mouse complejos que causaban errores",
         "Resuelto error 'preventDefault inside passive event listener'",
-        "Interfaz similar a Google Calendar para mejor UX"
+        "Interfaz similar a Google Calendar para mejor UX",
+        "Agregado botón de crear evento en vista del día",
+        "Corregida alineación de bloques a intervalos de 30 minutos",
+        "Mejorado formato de tiempo para evitar '16:06 a -16:06'",
+        "Corregida superposición del título con calendario de fondo",
+        "Corregida fecha por defecto al crear evento (ahora usa día seleccionado)",
+        "Agregado debug para investigar eventos faltantes en vista del día",
+        "Corregido filtrado estricto de eventos por slot de tiempo (ahora muestra todos los eventos del día)",
+        "Corregido cálculo de horario de fin basado en durationMin en lugar de endDateTime",
+        "Agregado debug adicional para verificar asignación correcta de eventos a slots temporales",
+        "Corregido problema de zona horaria en filtrado de eventos (UTC vs hora local)"
       ],
       "benefits": [
         "Mejor legibilidad de eventos en móviles",

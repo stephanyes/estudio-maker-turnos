@@ -144,6 +144,11 @@ export default function WeekView3({ onChanged }: Props) {
     }
   };
 
+  // Obtener fecha para crear evento (día expandido o día actual)
+  const getDateForCreating = () => {
+    return expandedDay ? expandedDay.startOf('day').plus({ hours: 9 }) : DateTime.now();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header móvil estilo Google Calendar */}
@@ -316,7 +321,7 @@ export default function WeekView3({ onChanged }: Props) {
       {expandedDay && (
         <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
           {/* Header de la vista del día */}
-          <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 shadow-sm">
+          <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 shadow-sm z-10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <button
@@ -335,32 +340,73 @@ export default function WeekView3({ onChanged }: Props) {
                 </div>
               </div>
               
-              <button
-                onClick={() => setExpandedDay(null)}
-                className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"
-              >
-                ✕
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCreating(getDateForCreating().toISO())}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center gap-2"
+                >
+                  <Plus size={16} />
+                  Crear
+                </button>
+                <button
+                  onClick={() => setExpandedDay(null)}
+                  className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
           </div>
           
           {/* Contenido principal - Cuadrícula horaria */}
           <div className="p-4">
             <div className="max-w-4xl mx-auto">
-              {/* Cuadrícula horaria del día */}
-              <div className="space-y-1">
-                {Array.from({ length: 13 }, (_, i) => {
-                  const hour = i + 9; // Desde 9:00 AM hasta 9:00 PM
-                  const hourEvents = getEventsForDay(expandedDay).filter((event: any) => {
-                    const eventHour = DateTime.fromISO(event.startDateTime).hour;
-                    return eventHour === hour;
+              {/* Cuadrícula horaria del día - Intervalos de 30 minutos */}
+              <div className="space-y-0">
+                {Array.from({ length: 26 }, (_, i) => {
+                  const hour = Math.floor(i / 2) + 9; // Desde 9:00 AM hasta 9:00 PM
+                  const minute = (i % 2) * 30; // 0 o 30 minutos
+                  const timeSlot = DateTime.fromObject({ hour, minute });
+                  
+                  // Obtener eventos que empiezan en este slot de 30 minutos
+                  const slotEvents = getEventsForDay(expandedDay).filter((event: any) => {
+                    const eventTime = DateTime.fromISO(event.startDateTime);
+                    // Convertir a zona horaria local para comparar con los slots
+                    const eventTimeLocal = eventTime.toLocal();
+                    const eventMinutes = eventTimeLocal.hour * 60 + eventTimeLocal.minute;
+                    const slotStartMinutes = hour * 60 + minute;
+                    const slotEndMinutes = slotStartMinutes + 30;
+                    
+                    // Evento empieza dentro de este slot de 30 minutos (en hora local)
+                    return eventMinutes >= slotStartMinutes && eventMinutes < slotEndMinutes;
                   });
                   
+                  // Debug: mostrar todos los eventos del día para verificar
+                  if (hour === 9 && minute === 0) {
+                    console.log('🔍 Debug - Todos los eventos del día:', getEventsForDay(expandedDay));
+                    console.log('🔍 Debug - Eventos filtrados por slot:', slotEvents);
+                    console.log('🌍 Debug - Zona horaria del navegador:', Intl.DateTimeFormat().resolvedOptions().timeZone);
+                    console.log('🌍 Debug - Hora actual local:', DateTime.now().toLocal().toFormat('HH:mm'));
+                    console.log('🌍 Debug - Hora actual UTC:', DateTime.now().toUTC().toFormat('HH:mm'));
+                  }
+                  
+                  // Debug adicional: mostrar eventos de cada slot para verificar asignación
+                  if (slotEvents.length > 0) {
+                    console.log(`🔍 Slot ${hour}:${minute.toString().padStart(2, '0')} - Eventos:`, slotEvents.map(e => ({
+                      title: e.title,
+                      start: e.startDateTime,
+                      startLocal: DateTime.fromISO(e.startDateTime).toLocal().toFormat('HH:mm'),
+                      startUTC: DateTime.fromISO(e.startDateTime).toUTC().toFormat('HH:mm'),
+                      duration: e.durationMin,
+                      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                    })));
+                  }
+                  
                   return (
-                    <div key={hour} className="flex min-h-[60px] border-b border-gray-100">
+                    <div key={i} className="flex min-h-[30px] border-b border-gray-100">
                       {/* Hora */}
-                      <div className="w-20 text-sm text-gray-500 font-medium pt-2">
-                        {hour}:00
+                      <div className="w-20 text-sm text-gray-500 font-medium pt-1">
+                        {timeSlot.toFormat('HH:mm')}
                       </div>
                       
                       {/* Línea de tiempo y eventos */}
@@ -368,12 +414,12 @@ export default function WeekView3({ onChanged }: Props) {
                         {/* Línea de tiempo */}
                         <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200"></div>
                         
-                        {/* Eventos de esta hora */}
-                        <div className="pl-4 pt-2">
-                          {hourEvents.map((event: any, eventIndex: number) => (
+                        {/* Eventos de este slot */}
+                        <div className="pl-4 pt-1">
+                          {slotEvents.map((event: any, eventIndex: number) => (
                             <div
                               key={event.id}
-                              className={`mb-2 p-3 rounded-lg ${getEventColor(event.status)} text-white shadow-sm`}
+                              className={`mb-1 p-2 rounded-lg ${getEventColor(event.status)} text-white shadow-sm cursor-pointer hover:opacity-90 transition-opacity`}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setEditing({
@@ -384,20 +430,24 @@ export default function WeekView3({ onChanged }: Props) {
                               }}
                             >
                               <div className="flex items-center justify-between">
-                                <div className="font-medium">{event.title}</div>
+                                <div className="font-medium text-sm">{event.title}</div>
                                 <div className="text-xs opacity-90">
-                                  {DateTime.fromISO(event.startDateTime).toFormat('HH:mm')} - 
-                                  {DateTime.fromISO(event.endDateTime || event.startDateTime).toFormat('HH:mm')}
+                                  {(() => {
+                                    const start = DateTime.fromISO(event.startDateTime);
+                                    // Calcular fin basado en durationMin, no en endDateTime
+                                    const end = start.plus({ minutes: event.durationMin || 30 });
+                                    return `${start.toFormat('HH:mm')} - ${end.toFormat('HH:mm')}`;
+                                  })()}
                                 </div>
                               </div>
-                              <div className="text-sm opacity-90 mt-1">
+                              <div className="text-xs opacity-90 mt-1">
                                 {getStatusText(event.status)}
                               </div>
                             </div>
                           ))}
                           
-                          {hourEvents.length === 0 && (
-                            <div className="text-sm text-gray-400 italic pt-2">
+                          {slotEvents.length === 0 && minute === 0 && (
+                            <div className="text-xs text-gray-300 italic">
                               Sin eventos
                             </div>
                           )}
