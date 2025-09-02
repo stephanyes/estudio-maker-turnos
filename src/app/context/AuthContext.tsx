@@ -389,6 +389,7 @@ export const usePermissions = () => {
     canResetData: isAdmin,
     canAccessDev: isAdmin,
     canAccessAdmin: isAdmin, // 🆕 Nuevo permiso para dashboard de admin
+    canViewCompetitors: isAdmin, // 🆕 Nuevo permiso para precios de competencia
     
     // 👥 Admin y Staff pueden gestionar precios
     canManagePrices: true, // Cambiado: Staff también puede ver/gestionar precios

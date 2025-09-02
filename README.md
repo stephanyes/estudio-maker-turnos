@@ -29,6 +29,13 @@ Un sistema completo de gestión para salones de belleza, barberías y spas con m
 - **Estado de pagos** en tiempo real
 - **Análisis de revenue** por período
 
+### **🎯 Monitoreo de Competencia**
+- **Scraping inteligente** de precios de competencia
+- **Cache avanzado** con ETag, Last-Modified y Content Hash
+- **Categorización automática** de servicios
+- **Vista integrada** en navbar principal (solo admin)
+- **Detección automática** de cambios en precios
+
 ## 🏗️ **Arquitectura Técnica**
 
 ### **Frontend**
@@ -77,6 +84,18 @@ Un sistema completo de gestión para salones de belleza, barberías y spas con m
 | Vista | Componente | Descripción |
 |-------|------------|-------------|
 | **Precios** | `PriceView` | Gestión de precios y servicios |
+| **Competencia** | `CompetitorsView` | Monitoreo de precios de competencia |
+
+### **🔧 Vistas de Desarrollo**
+| Vista | Componente | Descripción |
+|-------|------------|-------------|
+| **Dev Tools** | `DevTools` | Herramientas de desarrollo y debugging |
+
+## 📚 **Documentación**
+
+### **Monitoreo de Competencia**
+- **[Flow del Scraper](./SCRAPER_FLOW.md)** - Diagrama visual del flujo de datos
+- **[README Completo del Scraper](./COMPETITORS_SCRAPER_README.md)** - Documentación técnica detallada
 
 ## 🚀 **Inicio Rápido**
 

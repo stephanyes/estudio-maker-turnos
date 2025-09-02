@@ -89,9 +89,9 @@
       "tasks": [
         "Crear pantalla dedicada para mostrar precios de competencia",
         "Implementar sistema de web scraping",
-        "Configurar actualizaciones automáticas de precios",
+        "Configurar actualizaciones automáticas de precios (feature futuro - por ahora manual)",
         "Crear interfaz para visualizar y comparar precios",
-        "Implementar sistema de alertas cuando cambien precios"
+        "Implementar sistema de alertas cuando cambien precios (feature futuro)"
       ],
       "technicalNotes": "Aunque será difícil, es factible. Considerar usar Puppeteer o similar para PDFs."
     },

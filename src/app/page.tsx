@@ -20,6 +20,7 @@ import TrafficView from './components/TrafficView';
 import StaffManagementView from './components/StaffManagementView';
 import TimeMetricsView from './components/TimeMetricsView';
 import AdminDashboard from './components/AdminDashboard';
+import CompetitorsView from './components/CompetitorsView';
 import { ProtectedRoute } from './components/Auth/LoginForm';
 import { usePermissions, useAuth } from './context/AuthContext';
 
@@ -44,7 +45,7 @@ import {
   Shield
 } from "lucide-react";
 
-type View = 'week' | 'prices' | 'stats' | 'clients' | 'followup' | 'daily' | 'traffic' | 'staff' | 'timing' | 'dev' | 'admin';
+type View = 'week' | 'prices' | 'stats' | 'clients' | 'followup' | 'daily' | 'traffic' | 'staff' | 'timing' | 'dev' | 'admin' | 'competitors';
 
 export default function Home() {
   const [view, setView] = useState<View>('week');
@@ -87,6 +88,7 @@ export default function Home() {
   const handleStaff = () => setView('staff');
   const handleTiming = () => setView('timing');
   const handleAdmin = () => setView('admin');
+  const handleCompetitors = () => setView('competitors');
 
   return (
     <ProtectedRoute>
@@ -223,16 +225,30 @@ export default function Home() {
                 </button>
               )}
               
-              {/* Precios - Solo Admin */}
+                            {/* Precios - Solo Admin */}
               {permissions.canManagePrices && (
                 <button
                   onClick={handlePrices}
                   className={`flex-1 sm:flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
                             hover:bg-zinc-100
-                            ${view === 'prices' ? 'bg-sky-100 text-sky-700' : ''}`}
+                          ${view === 'prices' ? 'bg-sky-100 text-sky-700' : ''}`}
                 >
                   <DollarSign size={16} />
                   <span>Precios</span>
+                </button>
+              )}
+              
+              {/* Competencia - Solo Admin */}
+              {permissions.canViewCompetitors && (
+                <button
+                  onClick={handleCompetitors}
+                  className={`flex-1 sm:flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
+                            hover:bg-zinc-100
+                          ${view === 'competitors' ? 'bg-emerald-100 text-emerald-700' : ''}`}
+                  title="Precios de la competencia"
+                >
+                  <TrendingUp size={16} />
+                  <span>Competencia</span>
                 </button>
               )}
               
@@ -440,6 +456,17 @@ export default function Home() {
                         <span>Precios</span>
                       </button>
                     )}
+                    {permissions.canViewCompetitors && (
+                      <button
+                        onClick={() => { handleCompetitors(); setMobileMenuOpen(false); }}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm ${
+                          view === 'competitors' ? 'bg-emerald-100 text-emerald-700' : 'hover:bg-zinc-50'
+                        }`}
+                      >
+                        <BarChart3 size={16} />
+                        <span>Competencia</span>
+                      </button>
+                    )}
                     {permissions.canViewStats && (
                       <button
                         onClick={() => { handleStats(); setMobileMenuOpen(false); }}
@@ -600,6 +627,13 @@ export default function Home() {
         {view === 'timing' && permissions.canViewTiming && (
           <div className="card p-4">
             <TimeMetricsView />
+          </div>
+        )}
+
+        {/* Vista de Competencia - Solo Admin */}
+        {view === 'competitors' && permissions.canViewCompetitors && (
+          <div className="card p-4">
+            <CompetitorsView />
           </div>
         )}
 

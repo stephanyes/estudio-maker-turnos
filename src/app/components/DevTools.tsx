@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { seedDatabase, verifySeedData, getQuickStats, addSeedData } from '../../lib/seed';
 import { resetSupabaseTenant } from '../../lib/reset-db';
 import { exportJSON, importJSON } from '../../lib/backup';
@@ -173,6 +174,7 @@ export default function DevTools() {
               disabled={isLoading}
             />
           </label>
+
         </div>
 
         {/* Estadísticas */}
