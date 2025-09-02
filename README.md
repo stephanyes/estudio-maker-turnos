@@ -98,7 +98,10 @@ Un sistema completo de gestión para salones de belleza, barberías y spas con m
 - **[README Completo del Scraper](./COMPETITORS_SCRAPER_README.md)** - Documentación técnica detallada
 
 ### **Sistema de Pagos Simplificado**
-- **[Changelog de Simplificación](./CHANGELOG_SIMPLIFICACION_PAGOS.md)** - Documentación completa de cambios y mejoras
+- **[Changelog Completo](./CHANGELOG_SIMPLIFICACION_PAGOS.md)** - Documentación del sistema de pagos simplificado
+
+### **Mejoras de UI/UX Recientes**
+- **[Changelog de UI/UX](./CHANGELOG_UI_UX_MEJORAS.md)** - Documentación completa de todas las mejoras implementadas
 
 ## 🚀 **Inicio Rápido**
 
