@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { supabase } from '../../lib/supabase';
 
 type PriceRow = {
   id?: string;
@@ -72,7 +73,18 @@ export default function CompetitorsView() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/competitors/prices', { cache: 'no-store' });
+      // 🔐 OBTENER TOKEN DE AUTENTICACIÓN
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('No hay sesión activa');
+      }
+
+      const res = await fetch('/api/competitors/prices', { 
+        cache: 'no-store',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = (await res.json()) as PricesResponse;
       setData(json);
@@ -81,13 +93,24 @@ export default function CompetitorsView() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [supabase]);
 
   const doRefresh = useCallback(async () => {
     setRefreshing(true);
     setError(null);
     try {
-      const res = await fetch('/api/competitors/refresh', { method: 'POST' });
+      // 🔐 OBTENER TOKEN DE AUTENTICACIÓN
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('No hay sesión activa');
+      }
+
+      const res = await fetch('/api/competitors/refresh', { 
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       await load();
     } catch (e: any) {
@@ -95,7 +118,7 @@ export default function CompetitorsView() {
     } finally {
       setRefreshing(false);
     }
-  }, [load]);
+  }, [load, supabase]);
 
   useEffect(() => {
     load();

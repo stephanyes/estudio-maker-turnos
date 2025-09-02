@@ -1,7 +1,7 @@
-import { supabase } from '../supabase';
+import { SupabaseClient } from '@supabase/supabase-js';
 import type { CompetitorPriceRecord, CompetitorSource } from './types';
 
-export async function insertPrices(records: CompetitorPriceRecord[]) {
+export async function insertPrices(supabase: SupabaseClient, records: CompetitorPriceRecord[]) {
   if (records.length === 0) return { inserted: 0 };
   // De-duplicar por clave (source + service_name + price)
   const seen = new Set<string>();
@@ -29,7 +29,7 @@ export async function insertPrices(records: CompetitorPriceRecord[]) {
   return { inserted: rows.length };
 }
 
-export async function getLatestBySource(source: CompetitorSource) {
+export async function getLatestBySource(supabase: SupabaseClient, source: CompetitorSource) {
   const { data, error } = await supabase
     .from('competitor_prices')
     .select('*')
@@ -40,7 +40,7 @@ export async function getLatestBySource(source: CompetitorSource) {
   return data ?? [];
 }
 
-export async function getLastScrapeRun(source: CompetitorSource) {
+export async function getLastScrapeRun(supabase: SupabaseClient, source: CompetitorSource) {
   const { data, error } = await supabase
     .from('scrape_runs')
     .select('*')
@@ -53,6 +53,7 @@ export async function getLastScrapeRun(source: CompetitorSource) {
 }
 
 export async function createScrapeRun(
+  supabase: SupabaseClient,
   source: CompetitorSource,
   lockMinutes: number
 ) {
@@ -66,7 +67,7 @@ export async function createScrapeRun(
   return data;
 }
 
-export async function finishScrapeRun(id: string, status: 'success' | 'failed' | 'skipped', result?: any, errorMsg?: string) {
+export async function finishScrapeRun(supabase: SupabaseClient, id: string, status: 'success' | 'failed' | 'skipped', result?: any, errorMsg?: string) {
   const { error } = await supabase
     .from('scrape_runs')
     .update({ status, finished_at: new Date().toISOString(), result: result ?? {}, error: errorMsg ?? null })
