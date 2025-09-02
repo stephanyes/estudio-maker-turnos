@@ -18,6 +18,25 @@ export const metadata: Metadata = {
   icons: {
     icon: '/icono.png',
     apple: '/icono.png'
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Estudio Maker',
+    startupImage: [
+      {
+        url: '/icono.png',
+        media: '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)'
+      },
+      {
+        url: '/icono.png',
+        media: '(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)'
+      },
+      {
+        url: '/icono.png',
+        media: '(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)'
+      }
+    ]
   }
 };
 
