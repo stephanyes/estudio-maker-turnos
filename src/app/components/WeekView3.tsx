@@ -32,6 +32,7 @@ export default function WeekView3({ onChanged }: Props) {
   const [view, setView] = useState<'month' | 'week'>('month');
   const [creating, setCreating] = useState<string | undefined>();
   const [editing, setEditing] = useState<{ id: string; start: string; end: string } | undefined>();
+  const [expandedDay, setExpandedDay] = useState<DateTime | null>(null);
   
   // 🎯 DataProvider para obtener todos los datos
   const { 
@@ -132,6 +133,15 @@ export default function WeekView3({ onChanged }: Props) {
   const handleFormSaved = () => {
     invalidateAppointments();
     onChanged?.();
+  };
+
+  // Manejar click para expandir/contraer día
+  const handleDayClick = (date: DateTime) => {
+    if (expandedDay?.hasSame(date, 'day')) {
+      setExpandedDay(null); // Cerrar si ya está expandido
+    } else {
+      setExpandedDay(date); // Expandir el día seleccionado
+    }
   };
 
   return (
@@ -235,13 +245,15 @@ export default function WeekView3({ onChanged }: Props) {
           {monthDays.map((day, index) => {
             const dayEvents = getEventsForDay(day.date);
             const isToday = day.isToday;
+            const isExpanded = expandedDay?.hasSame(day.date, 'day');
             
             return (
               <div
                 key={index}
                 className={`min-h-[80px] p-2 border-r border-b border-gray-200 ${
                   day.isCurrentMonth ? 'bg-white' : 'bg-gray-50'
-                } ${isToday ? 'bg-blue-50' : ''}`}
+                } ${isToday ? 'bg-blue-50' : ''} ${isExpanded ? 'bg-blue-100' : ''}`}
+                onClick={() => handleDayClick(day.date)}
               >
                 {/* Número del día */}
                 <div className={`text-sm font-medium mb-1 ${
@@ -261,11 +273,14 @@ export default function WeekView3({ onChanged }: Props) {
                       key={event.id}
                       className={`text-xs p-1 rounded truncate ${getEventColor(event.status)} text-white cursor-pointer hover:opacity-80 transition-opacity`}
                       title={`Clic para editar: ${event.title} - ${getStatusText(event.status)}`}
-                      onClick={() => setEditing({
-                        id: event.id,
-                        start: event.startDateTime,
-                        end: event.endDateTime || event.startDateTime
-                      })}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Evitar que se active el tap del día
+                        setEditing({
+                          id: event.id,
+                          start: event.startDateTime,
+                          end: event.endDateTime || event.startDateTime
+                        });
+                      }}
                     >
                       {event.title}
                     </div>
@@ -277,11 +292,125 @@ export default function WeekView3({ onChanged }: Props) {
                     </div>
                   )}
                 </div>
+
+                {/* Indicador de vista expandida */}
+                {isExpanded && (
+                  <div className="mt-2 text-xs text-blue-600 font-medium">
+                    Click para cerrar
+                  </div>
+                )}
+                
+                {/* Indicador de click disponible */}
+                {!isExpanded && dayEvents.length > 0 && (
+                  <div className="mt-1 text-xs text-gray-400 text-center">
+                    Click para ver detalles
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
       </div>
+
+      {/* Vista expandida del día - Nueva vista prominente */}
+      {expandedDay && (
+        <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
+          {/* Header de la vista del día */}
+          <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setExpandedDay(null)}
+                  className="p-2 rounded-lg hover:bg-gray-100"
+                >
+                  <ChevronLeft size={20} className="text-gray-600" />
+                </button>
+                <div>
+                  <h1 className="text-xl font-semibold text-gray-900">
+                    {expandedDay.toFormat('EEEE, d \'de\' MMMM', { locale: 'es' })}
+                  </h1>
+                  <p className="text-sm text-gray-500">
+                    Vista detallada del día
+                  </p>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => setExpandedDay(null)}
+                className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+          
+          {/* Contenido principal - Cuadrícula horaria */}
+          <div className="p-4">
+            <div className="max-w-4xl mx-auto">
+              {/* Cuadrícula horaria del día */}
+              <div className="space-y-1">
+                {Array.from({ length: 13 }, (_, i) => {
+                  const hour = i + 9; // Desde 9:00 AM hasta 9:00 PM
+                  const hourEvents = getEventsForDay(expandedDay).filter((event: any) => {
+                    const eventHour = DateTime.fromISO(event.startDateTime).hour;
+                    return eventHour === hour;
+                  });
+                  
+                  return (
+                    <div key={hour} className="flex min-h-[60px] border-b border-gray-100">
+                      {/* Hora */}
+                      <div className="w-20 text-sm text-gray-500 font-medium pt-2">
+                        {hour}:00
+                      </div>
+                      
+                      {/* Línea de tiempo y eventos */}
+                      <div className="flex-1 relative">
+                        {/* Línea de tiempo */}
+                        <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200"></div>
+                        
+                        {/* Eventos de esta hora */}
+                        <div className="pl-4 pt-2">
+                          {hourEvents.map((event: any, eventIndex: number) => (
+                            <div
+                              key={event.id}
+                              className={`mb-2 p-3 rounded-lg ${getEventColor(event.status)} text-white shadow-sm`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditing({
+                                  id: event.id,
+                                  start: event.startDateTime,
+                                  end: event.endDateTime || event.startDateTime
+                                });
+                              }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="font-medium">{event.title}</div>
+                                <div className="text-xs opacity-90">
+                                  {DateTime.fromISO(event.startDateTime).toFormat('HH:mm')} - 
+                                  {DateTime.fromISO(event.endDateTime || event.startDateTime).toFormat('HH:mm')}
+                                </div>
+                              </div>
+                              <div className="text-sm opacity-90 mt-1">
+                                {getStatusText(event.status)}
+                              </div>
+                            </div>
+                          ))}
+                          
+                          {hourEvents.length === 0 && (
+                            <div className="text-sm text-gray-400 italic pt-2">
+                              Sin eventos
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Botón flotante de acción */}
       <button

@@ -151,6 +151,77 @@
       ]
     },
     
+    "pwaButtonMobileConflict": {
+      "title": "Resolver Conflicto de Botones en Móvil",
+      "description": "El botón de instalación PWA se superpone con el botón de crear evento en móviles",
+      "status": "completed",
+      "date": "2024-12-19",
+      "priority": "medium",
+      "issue": "Botón PWA y botón de crear evento se superponen en la esquina inferior derecha en móviles",
+      "solution": "Ocultar temporalmente el botón de instalación PWA en dispositivos móviles",
+      "changesMade": [
+        "Agregada detección de dispositivo móvil en InstallPWAButton",
+        "Botón PWA no se muestra en pantallas < 768px o dispositivos móviles",
+        "Mantenida funcionalidad PWA en desktop",
+        "Resuelto conflicto visual en móviles"
+      ],
+      "benefits": [
+        "Sin superposición de botones en móviles",
+        "Mejor experiencia de usuario en dispositivos móviles",
+        "Funcionalidad PWA mantenida en desktop",
+        "Interfaz más limpia y funcional"
+      ],
+      "notes": "Solución temporal - se puede reactivar el botón PWA en móviles cuando se resuelva el conflicto de posicionamiento"
+    },
+    
+    "mobileCalendarDayExpansion": {
+      "title": "Vista Expandida de Día en Calendario Móvil",
+      "description": "Implementar vista híbrida que permita ver la cuadrícula horaria detallada de un día específico",
+      "status": "completed",
+      "date": "2024-12-19",
+      "priority": "medium",
+      "issue": "En vista mensual móvil, los eventos se ven muy compactos y no se puede ver claramente la distribución horaria",
+      "solution": "Vista híbrida con click simple para expandir día y mostrar cuadrícula horaria detallada",
+      "changesMade": [
+        "Agregado estado expandedDay para rastrear día expandido",
+        "Implementado click simple para expandir/contraer día (eliminado long tap)",
+        "Vista expandida como pantalla completa con z-index alto",
+        "Header prominente con botón de retorno y título del día",
+        "Cuadrícula horaria detallada de 9:00 AM a 9:00 PM",
+        "Cada hora muestra eventos con hora de inicio/fin y estado",
+        "Línea de tiempo visual para mejor organización",
+        "Eventos clickeables para edición",
+        "Indicadores visuales claros: 'Click para ver detalles' y 'Click para cerrar'",
+        "Eliminados eventos touch/mouse complejos que causaban errores",
+        "Resuelto error 'preventDefault inside passive event listener'",
+        "Interfaz similar a Google Calendar para mejor UX"
+      ],
+      "benefits": [
+        "Mejor legibilidad de eventos en móviles",
+        "Vista detallada como pantalla completa prominente",
+        "Distribución horaria clara de eventos",
+        "Interfaz intuitiva con click simple = más detalles",
+        "Sin errores de consola (preventDefault resuelto)",
+        "Mejor organización visual de turnos por hora",
+        "Experiencia similar a Google Calendar",
+        "Navegación clara con botón de retorno"
+      ],
+      "technicalDetails": [
+        "Detección de tap largo con setTimeout de 500ms",
+        "Filtrado de eventos por hora específica",
+        "Formato de fecha en español (EEEE, d 'de' MMMM)",
+        "Estilos condicionales para día expandido",
+        "stopPropagation para evitar conflictos de eventos"
+      ],
+      "userExperience": [
+        "Tap simple: Navegación entre fechas",
+        "Tap largo: Expandir día para ver detalles",
+        "Vista expandida: Cuadrícula horaria con eventos",
+        "Botón X: Cerrar vista expandida",
+        "Indicador visual: 'Tap largo para cerrar'"
+      ]
+    },
+    
     "desktopCalendarRedesign": {
       "title": "Rediseño del Calendario para Desktop",
       "description": "Crear nueva vista desktop inspirada en Google Calendar para mejor experiencia y distribución",
