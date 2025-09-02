@@ -27,7 +27,7 @@ export default function CompetitorsView() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['corte', 'color', 'tratamientos', 'cauterizacion', 'peinado', 'otros']));
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
   const lastUpdated = useMemo(() => {
     const all = [...data.cerini, ...data.mala];
@@ -57,13 +57,14 @@ export default function CompetitorsView() {
     }, {} as GroupedPrices);
   }, [data.mala]);
 
-  const toggleCategory = useCallback((category: string) => {
+  const toggleCategory = useCallback((category: string, source: 'cerini' | 'mala') => {
+    const uniqueCategory = `${source}_${category}`;
     setExpandedCategories(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(category)) {
-        newSet.delete(category);
+      if (newSet.has(uniqueCategory)) {
+        newSet.delete(uniqueCategory);
       } else {
-        newSet.add(category);
+        newSet.add(uniqueCategory);
       }
       return newSet;
     });
@@ -189,7 +190,7 @@ function CompetitorSection({
   groupedData: GroupedPrices; 
   loading: boolean;
   expandedCategories: Set<string>;
-  onToggleCategory: (category: string) => void;
+  onToggleCategory: (category: string, source: 'cerini' | 'mala') => void;
   categoryLabels: Record<string, string>;
 }) {
   const categories = Object.keys(groupedData).sort();
@@ -225,13 +226,15 @@ function CompetitorSection({
       <div className="p-3 space-y-3">
         {categories.map(category => {
           const items = groupedData[category];
-          const isExpanded = expandedCategories.has(category);
+          const source = title.toLowerCase().includes('cerini') ? 'cerini' : 'mala';
+          const uniqueCategory = `${source}_${category}`;
+          const isExpanded = expandedCategories.has(uniqueCategory);
           const categoryLabel = categoryLabels[category] || category;
 
           return (
             <div key={category} className="border rounded">
               <button
-                onClick={() => onToggleCategory(category)}
+                onClick={() => onToggleCategory(category, title.toLowerCase().includes('cerini') ? 'cerini' : 'mala')}
                 className="w-full p-2 text-left bg-gray-50 hover:bg-gray-100 flex items-center justify-between"
               >
                 <span className="font-medium capitalize">{categoryLabel}</span>

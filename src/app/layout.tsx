@@ -7,7 +7,7 @@ import { DataProvider } from './context/DataProvider';
 import { DataLoadingProvider } from './components/DataLoadingProvider';
 import DataProviderDebug from './components/DataProviderDebug';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import InstallPWAButton from './components/InstallPWAButton';
+// import InstallPWAButton from './components/InstallPWAButton';
 
 
 export const metadata: Metadata = {
@@ -72,7 +72,7 @@ export default function RootLayout({
             </QueryProvider>
           </AuthProvider>
         </ErrorBoundary>
-        <InstallPWAButton />
+        {/* <InstallPWAButton /> */}
       </body>
     </html>
   );
