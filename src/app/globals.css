@@ -250,3 +250,41 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* ======================================== */
+/* SAFARI-SPECIFIC FIXES - NO TOCAR LO ANTERIOR */
+/* ======================================== */
+
+/* Fix para botones azules en Safari iPhone */
+@supports (-webkit-touch-callout: none) {
+  /* Solo Safari en iOS */
+  .bg-sky-500,
+  .bg-sky-600,
+  .bg-sky-700 {
+    background-color: #0284c7 !important; /* sky-600 */
+  }
+  
+  .bg-emerald-500,
+  .bg-emerald-600 {
+    background-color: #059669 !important; /* emerald-600 */
+  }
+  
+  .bg-blue-500,
+  .bg-blue-600 {
+    background-color: #2563eb !important; /* blue-600 */
+  }
+  
+  .bg-red-500,
+  .bg-red-600 {
+    background-color: #dc2626 !important; /* red-600 */
+  }
+}
+
+/* Fix adicional para Safari en general */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  _::-webkit-:not(:root:root), .bg-sky-500,
+  _::-webkit-:not(:root:root), .bg-sky-600,
+  _::-webkit-:not(:root:root), .bg-sky-700 {
+    background-color: #0284c7 !important;
+  }
+}
+
