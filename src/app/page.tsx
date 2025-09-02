@@ -1,6 +1,9 @@
 'use client';
 import WeekView from './components/WeekView';
 import WeekViewRBC from './components/WeekView2'; // Importar nueva vista
+import WeekView3 from './components/WeekView3'; // Vista móvil estilo Google Calendar
+import WeekView4 from './components/WeekView4'; // Vista desktop estilo Google Calendar
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { exportJSON, importJSON } from '@/lib/backup';
 import { saveAs } from 'file-saver';
 import { useRef, useState } from 'react';
@@ -49,6 +52,7 @@ export default function Home() {
   const fileRef = useRef<HTMLInputElement>(null);
   const permissions = usePermissions();
   const { signOut, user, userProfile } = useAuth();
+  const isMobile = useIsMobile();
   
         // Debug removido para optimización
 
@@ -527,9 +531,18 @@ export default function Home() {
           <>
             <StatsBar />
             <div className="card p-4">
-              <WeekViewRBC onChanged={() => {
+            {/* <WeekViewRBC onChanged={() => {
                 // console.log('🎯 page.tsx: onChanged called (week view) - this should NOT cause a reload');
+              }} /> */}
+                          {isMobile ? (
+              <WeekView3 onChanged={() => {
+                // console.log('🎯 page.tsx: onChanged called (week view mobile) - this should NOT cause a reload');
               }} />
+            ) : (
+              <WeekView4 onChanged={() => {
+                // console.log('🎯 page.tsx: onChanged called (week view desktop) - this should NOT cause a reload');
+              }} />
+            )}
             </div>
           </>
         )}

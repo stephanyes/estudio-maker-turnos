@@ -5,6 +5,30 @@
   "description": "Registro de ideas y cambios solicitados por el cliente para mejorar la aplicación",
   
   "highPriority": {
+    "calendarDragAndDropBug": {
+      "title": "Bug en Drag & Drop del Calendario",
+      "description": "Cuando se arrastra un evento para modificar su duración, se crea un turno nuevo en lugar de modificar el existente",
+      "status": "pending",
+      "severity": "high",
+      "currentBehavior": "Arrastrar evento crea nuevo turno en lugar de modificar el existente",
+      "expectedBehavior": "Arrastrar evento debe modificar el turno existente (duración/horario)",
+      "affectedFunctionality": [
+        "Modificación de duración de turnos existentes",
+        "Cambio de horario de turnos existentes",
+        "Experiencia de usuario al editar eventos"
+      ],
+      "tasks": [
+        "Investigar lógica de handleEventDrop en WeekView2",
+        "Verificar que se identifique correctamente el evento a modificar",
+        "Implementar lógica para modificar evento existente en lugar de crear nuevo",
+        "Testear funcionalidad de drag & drop para modificar duración",
+        "Testear funcionalidad de drag & drop para cambiar horario",
+        "Implementar y testear funcionalidad de resize (cambiar duración arrastrando bordes)",
+        "Verificar que handleEventResize funcione correctamente"
+      ],
+      "technicalNotes": "El problema parece estar en la lógica de handleEventDrop que no distingue entre crear nuevo evento y modificar existente. También hay funcionalidad de resize comentada que debería funcionar."
+    },
+    
     "businessModelChanges": {
       "title": "Cambios en el Modelo de Negocio",
       "description": "Ajustes necesarios para reflejar que NO hay walk-ins, todo es por turno",
@@ -108,6 +132,106 @@
       ]
     },
     
+    "debugComponentVisibility": {
+      "title": "Ocultar Componente de Debug en Producción",
+      "description": "El componente DataProviderDebug está siempre visible, debe ocultarse en producción",
+      "status": "completed",
+      "date": "2024-12-19",
+      "issue": "Componente de debug visible en producción con información técnica",
+      "solution": "Hacer el componente toggleable y más discreto",
+      "changesMade": [
+        "Modificado DataProviderDebug para ser toggleable con botón de bug",
+        "Agregado botón flotante discreto para mostrar/ocultar debug",
+        "Mejorado diseño y posicionamiento del componente"
+      ],
+      "benefits": [
+        "Interfaz más limpia - debug solo visible cuando se necesita",
+        "Botón discreto que no interfiere con la experiencia",
+        "Mejor experiencia de usuario final"
+      ]
+    },
+    
+    "desktopCalendarRedesign": {
+      "title": "Rediseño del Calendario para Desktop",
+      "description": "Crear nueva vista desktop inspirada en Google Calendar para mejor experiencia y distribución",
+      "status": "completed",
+      "date": "2024-12-19",
+      "priority": "high",
+      "inspiration": "Google Calendar desktop - diseño limpio y funcional",
+      "currentIssues": [
+        "Vista semanal con espacios desperdiciados",
+        "Distribución menos eficiente del espacio",
+        "Interfaz menos moderna y atractiva"
+      ],
+      "newFeatures": [
+        "Sidebar izquierdo con mini calendario y botón de crear",
+        "Header moderno con navegación intuitiva",
+        "Vista semanal y mensual integradas",
+        "Diseño limpio y profesional",
+        "Mejor aprovechamiento del espacio disponible"
+      ],
+      "implementation": [
+        "WeekView4.tsx creado con diseño inspirado en Google Calendar",
+        "Sidebar con mini calendario y navegación",
+        "Header con navegación y controles",
+        "Vista semanal y mensual toggleable",
+        "Integración automática en página principal"
+      ],
+      "filesCreated": [
+        "src/app/components/WeekView4.tsx"
+      ]
+    },
+    
+    "calendarEventEditing": {
+      "title": "Edición de Eventos del Calendario",
+      "description": "Hacer que los eventos sean clickeables para editar en ambas vistas (móvil y desktop)",
+      "status": "completed",
+      "date": "2024-12-19",
+      "priority": "high",
+      "issue": "Los eventos no eran clickeables para editar",
+      "solution": "Implementar funcionalidad de clic en eventos para abrir modal de edición",
+      "changesMade": [
+        "Agregado estado editing en WeekView3 (móvil) y WeekView4 (desktop)",
+        "Eventos ahora son clickeables con cursor pointer y hover effects",
+        "Modal de edición se abre al hacer clic en cualquier evento",
+        "Integración con AppointmentForm existente para edición",
+        "Tooltips informativos en eventos"
+      ],
+      "benefits": [
+        "Mejor experiencia de usuario - eventos editables",
+        "Funcionalidad completa de CRUD para turnos",
+        "Consistencia entre vistas móvil y desktop",
+        "Interfaz más intuitiva y profesional"
+      ]
+    },
+    
+    "miniCalendarFunctionality": {
+      "title": "Funcionalidad del Mini Calendario",
+      "description": "Hacer que el mini calendario en el sidebar funcione para navegación rápida",
+      "status": "completed",
+      "date": "2024-12-19",
+      "priority": "medium",
+      "issue": "El mini calendario no respondía a los clics y no mostraba el día seleccionado",
+      "solution": "Implementar navegación y estado visual del día seleccionado en el mini calendario",
+      "changesMade": [
+        "Agregado onClick handler en cada día del mini calendario",
+        "setRefDate se ejecuta al hacer clic en una fecha",
+        "Agregado estado selectedDate para rastrear el día seleccionado",
+        "Día seleccionado se resalta en azul (bg-blue-600)",
+        "Día actual se resalta en azul claro (bg-blue-100) cuando no está seleccionado",
+        "Tooltips informativos en cada día",
+        "Navegación instantánea entre fechas"
+      ],
+      "benefits": [
+        "Navegación rápida entre fechas",
+        "Feedback visual claro del día seleccionado",
+        "Mejor usabilidad del sidebar",
+        "Funcionalidad completa del mini calendario",
+        "Experiencia más profesional e intuitiva"
+      ],
+      "bugFix": "Corregido problema donde el día seleccionado no se resaltaba visualmente en el mini calendario"
+    },
+    
     "reporting": {
       "title": "Sistema de Reportes",
       "description": "Reportes adicionales para análisis de negocio",
@@ -151,6 +275,26 @@
         "Mejor legibilidad del calendario",
         "Más espacio para mostrar información de turnos",
         "Intervalos más prácticos para servicios de peluquería"
+      ]
+    },
+    
+    "mobileCalendarRedesign": {
+      "title": "Rediseño del Calendario para Móvil",
+      "description": "Crear nueva vista móvil inspirada en Google Calendar para mejor experiencia en dispositivos móviles",
+      "status": "completed",
+      "date": "2024-12-19",
+      "priority": "high",
+      "inspiration": "Google Calendar móvil - distribución compacta y eficiente",
+      "implementation": [
+        "WeekView3.tsx creado con interfaz móvil completa",
+        "Hook useIsMobile implementado para detección automática",
+        "Integración automática en página principal",
+        "Vista responsive que se adapta al dispositivo",
+        "Mantiene funcionalidad existente intacta"
+      ],
+      "filesCreated": [
+        "src/app/components/WeekView3.tsx",
+        "src/hooks/useIsMobile.ts"
       ]
     }
   },
@@ -219,4 +363,3 @@
     }
   }
 }
-git

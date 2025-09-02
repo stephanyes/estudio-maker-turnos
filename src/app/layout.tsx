@@ -64,8 +64,8 @@ export default function RootLayout({
                     <div >
                       {children}
                     </div>
-                    {/* 🎯 Debug component para monitorear el DataProvider */}
-                    <DataProviderDebug />
+                    {/* 🎯 Debug component para monitorear el DataProvider - Solo en desarrollo */}
+                    {process.env.NODE_ENV === 'development' && <DataProviderDebug />}
                   {/* </ThemeProvider> */}
                 </DataLoadingProvider>
               </DataProvider>
