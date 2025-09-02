@@ -546,7 +546,7 @@ export default function Home() {
         {view === 'week' && (
           <>
             <StatsBar />
-            <div className="card p-4">
+            <div className="card">
             {/* <WeekViewRBC onChanged={() => {
                 // console.log('🎯 page.tsx: onChanged called (week view) - this should NOT cause a reload');
               }} /> */}

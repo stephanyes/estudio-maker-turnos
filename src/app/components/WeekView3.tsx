@@ -153,45 +153,30 @@ export default function WeekView3({ onChanged }: Props) {
     <div className="min-h-[calc(100vh-120px)] bg-gray-50">
       {/* Header móvil estilo Google Calendar */}
       <div className="bg-white border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center justify-between">
-          {/* Menú hamburguesa */}
-          <button className="p-2 rounded-lg hover:bg-gray-100">
-            <Menu size={20} className="text-gray-600" />
-          </button>
-
-          {/* Mes y año con navegación */}
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center">
+          {/* Mes y año con navegación - centrado en mobile */}
+          <div className="flex items-center gap-4">
             <button 
               onClick={goToPreviousMonth}
-              className="p-1 rounded-full hover:bg-gray-100"
+              className="p-2 rounded-full hover:bg-gray-100"
             >
-              <ChevronLeft size={20} className="text-gray-600" />
+              <ChevronLeft size={24} className="text-gray-600" />
             </button>
             
             <div className="text-center">
-              <div className="text-lg font-semibold text-gray-900">
+              <div className="text-xl font-semibold text-gray-900">
                 {monthNames[refDate.month - 1]}
               </div>
-              <div className="text-sm text-gray-500">
+              <div className="text-base text-gray-500">
                 {refDate.year}
               </div>
             </div>
             
             <button 
               onClick={goToNextMonth}
-              className="p-1 rounded-full hover:bg-gray-100"
+              className="p-2 rounded-full hover:bg-gray-100"
             >
-              <ChevronRight size={20} className="text-gray-600" />
-            </button>
-          </div>
-
-          {/* Botones de acción */}
-          <div className="flex items-center gap-2">
-            <button className="p-2 rounded-lg hover:bg-gray-100">
-              <Search size={20} className="text-gray-600" />
-            </button>
-            <button className="p-2 rounded-lg hover:bg-gray-100">
-              <User size={20} className="text-gray-600" />
+              <ChevronRight size={24} className="text-gray-600" />
             </button>
           </div>
         </div>

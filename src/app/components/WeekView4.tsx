@@ -33,6 +33,7 @@ export default function WeekView4({ onChanged }: Props) {
   const [creating, setCreating] = useState<string | undefined>();
   const [editing, setEditing] = useState<{ id: string; start: string; end: string } | undefined>();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showMonthSelector, setShowMonthSelector] = useState(false);
   
   // 🎯 DataProvider para obtener todos los datos
   const { 
@@ -131,14 +132,15 @@ export default function WeekView4({ onChanged }: Props) {
     <div className="h-full bg-white flex">
       {/* Sidebar izquierdo */}
       {sidebarOpen && (
-        <div className="w-80 bg-gray-50 border-r border-gray-200 p-4 space-y-4">
-          {/* Botón de crear */}
-          <button
-            onClick={() => setCreating(DateTime.now().toISO())}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-          >
-            + Crear
-          </button>
+        <div className="w-80 bg-gray-50 border-r border-gray-200 space-y-4">
+          {/* Logo Estudio Maker - ARRIBA */}
+          <div className="bg-white rounded-lg border border-gray-200 flex items-center justify-center min-h-32">
+            <img
+              src="/assets/imgs/estudio_maker_black.PNG"
+              alt="Estudio Maker"
+              className="w-full h-full object-contain"
+            />
+          </div>
 
           {/* Mini calendario */}
           <div className="bg-white rounded-lg p-4 border border-gray-200">
@@ -170,9 +172,9 @@ export default function WeekView4({ onChanged }: Props) {
                     className={`text-center py-1 rounded cursor-pointer hover:bg-gray-100 ${
                       isCurrentMonth 
                         ? isSelected
-                          ? 'bg-blue-600 text-white' 
+                          ? 'bg-blue-600 text-white font-bold' 
                           : isToday
-                            ? 'bg-blue-100 text-blue-700'
+                            ? 'bg-orange-500 text-white font-bold ring-2 ring-orange-300 shadow-sm'
                             : 'text-gray-900'
                         : 'text-gray-400'
                     }`}
@@ -203,6 +205,14 @@ export default function WeekView4({ onChanged }: Props) {
               </div>
             </div>
           </div>
+
+          {/* Botón de crear - ABAJO */}
+          <button
+            onClick={() => setCreating(DateTime.now().toISO())}
+            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
+            + Crear
+          </button>
         </div>
       )}
 
@@ -210,27 +220,45 @@ export default function WeekView4({ onChanged }: Props) {
       <div className="flex-1 flex flex-col">
         {/* Header */}
         <div className="border-b border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            {/* Lado izquierdo */}
+          <div className="flex items-center justify-center">
+            {/* Navegación centrada - Navegación mensual + semanal */}
             <div className="flex items-center gap-4">
+              {/* Navegación mensual */}
               <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
+                onClick={() => setRefDate(refDate.minus({ months: 1 }))}
                 className="p-2 rounded-lg hover:bg-gray-100"
+                title="Mes anterior"
               >
-                <Menu size={20} className="text-gray-600" />
+                <ChevronLeft size={20} className="text-gray-600" />
               </button>
               
-              <div className="flex items-center gap-2">
-                <Calendar size={20} className="text-blue-600" />
-                <span className="text-xl font-semibold text-gray-900">Estudio Maker</span>
+              {/* Mes y año actual - Clickeable para selector rápido */}
+              <div 
+                className="text-center cursor-pointer hover:bg-gray-100 rounded-lg p-2 transition-colors"
+                onClick={() => setShowMonthSelector(!showMonthSelector)}
+              >
+                <div className="text-xl font-semibold text-gray-900">
+                  {monthNames[refDate.month - 1]}
+                </div>
+                <div className="text-sm text-gray-500">{refDate.year}</div>
               </div>
-            </div>
-
-            {/* Centro - Navegación */}
-            <div className="flex items-center gap-4">
+              
+              <button
+                onClick={() => setRefDate(refDate.plus({ months: 1 }))}
+                className="p-2 rounded-lg hover:bg-gray-100"
+                title="Mes siguiente"
+              >
+                <ChevronRight size={20} className="text-gray-600" />
+              </button>
+              
+              {/* Separador */}
+              <div className="w-px h-8 bg-gray-300"></div>
+              
+              {/* Navegación semanal */}
               <button
                 onClick={goToPrevious}
                 className="p-2 rounded-lg hover:bg-gray-100"
+                title="Semana anterior"
               >
                 <ChevronLeft size={20} className="text-gray-600" />
               </button>
@@ -245,45 +273,56 @@ export default function WeekView4({ onChanged }: Props) {
               <button
                 onClick={goToNext}
                 className="p-2 rounded-lg hover:bg-gray-100"
+                title="Semana siguiente"
               >
                 <ChevronRight size={20} className="text-gray-600" />
               </button>
               
-              <div className="text-lg font-medium text-gray-900">
-                {view === 'week' 
-                  ? `${weekDays[0].date.toFormat('dd MMM')} - ${weekDays[6].date.toFormat('dd MMM')}`
-                  : `${monthNames[refDate.month - 1]} ${refDate.year}`
-                }
-              </div>
-            </div>
-
-            {/* Lado derecho */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setView(view === 'week' ? 'month' : 'week')}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium"
-              >
-                {view === 'week' ? 'Semana' : 'Mes'}
-              </button>
-              
-              <button className="p-2 rounded-lg hover:bg-gray-100">
-                <Search size={20} className="text-gray-600" />
-              </button>
-              
-              <button className="p-2 rounded-lg hover:bg-gray-100">
-                <Settings size={20} className="text-gray-600" />
-              </button>
-              
-              <button className="p-2 rounded-lg hover:bg-gray-100">
-                <HelpCircle size={20} className="text-gray-600" />
-              </button>
-              
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                <User size={20} className="text-gray-600" />
+              {/* Semana actual */}
+              <div className="text-lg font-medium text-gray-700">
+                {`${weekDays[0].date.toFormat('dd MMM')} - ${weekDays[6].date.toFormat('dd MMM')}`}
               </div>
             </div>
           </div>
         </div>
+
+        {/* Selector de mes/año */}
+        {showMonthSelector && (
+          <div className="border-b border-gray-200 p-4 bg-gray-50">
+            <div className="flex items-center justify-center gap-4">
+              {/* Selector de mes */}
+              <select
+                value={refDate.month}
+                onChange={(e) => setRefDate(refDate.set({ month: Number(e.target.value) }))}
+                className="border rounded-lg px-3 py-2 bg-white text-gray-900"
+              >
+                {monthNames.map((month, index) => (
+                  <option key={index} value={index + 1}>
+                    {month}
+                  </option>
+                ))}
+              </select>
+              
+              {/* Selector de año */}
+              <input
+                type="number"
+                value={refDate.year}
+                onChange={(e) => setRefDate(refDate.set({ year: Number(e.target.value) }))}
+                className="w-24 border rounded-lg px-3 py-2 bg-white text-gray-900 text-center"
+                min="2020"
+                max="2030"
+              />
+              
+              {/* Botón para cerrar */}
+              <button
+                onClick={() => setShowMonthSelector(false)}
+                className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Calendario principal */}
         <div className="flex-1 overflow-auto">
