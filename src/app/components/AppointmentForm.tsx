@@ -39,6 +39,11 @@ export default function AppointmentForm({
   const [byweekday, setByweekday] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  // 🆕 SIMPLIFICACIÓN: Reemplazar serviceId por campos manuales
+  const [serviceName, setServiceName] = useState<string>(''); // Nombre del servicio manual
+  const [servicePrice, setServicePrice] = useState<number | ''>(''); // Precio manual del servicio
+  
+  // 🆕 MANTENER serviceId para compatibilidad durante transición
   const [serviceId, setServiceId] = useState<string>('');
   const [clientId, setClientId] = useState<string | undefined>(undefined);
   const [status, setStatus] = useState<'pending' | 'done' | 'cancelled'>('pending');
@@ -98,16 +103,17 @@ export default function AppointmentForm({
   
   // 🎯 Optimización: Memoizar validaciones
   const isFormValid = useMemo(() => {
-    return serviceId && durationMin > 0 && startISO;
-  }, [serviceId, durationMin, startISO]);
+    // 🆕 SIMPLIFICACIÓN: Validar que haya nombre de servicio y precio
+    return serviceName.trim() && Number(servicePrice) > 0 && durationMin > 0 && startISO;
+  }, [serviceName, servicePrice, durationMin, startISO]);
   //   occurrenceStartISO
   // });
 
-  // Precio calculado automáticamente
+  // 🆕 SIMPLIFICACIÓN: Usar precio manual en lugar de servicio seleccionado
   const selectedService = services?.find((s: any) => s.id === serviceId);
   
-  // 🎯 PRESERVAR PRECIO ORIGINAL: Usar precio guardado o actual del servicio
-  const effectiveListPrice = originalListPrice ?? selectedService?.price ?? 0;
+  // 🎯 SIMPLIFICACIÓN: Usar precio manual o precio guardado
+  const effectiveListPrice = originalListPrice ?? (Number(servicePrice) || 0);
   
   const priceCalculation = effectiveListPrice > 0 ? calculateFinalPrice(
     effectiveListPrice, 
@@ -171,9 +177,38 @@ export default function AppointmentForm({
       }
       setStartISO(occurrenceStartISO ?? base.startDateTime);
       setServiceId(base.serviceId ?? '');
+      
+      // 🆕 SIMPLIFICACIÓN: Cargar nombre y precio del servicio si existe
+      if (base.serviceId) {
+        const service = await db.services.get(base.serviceId);
+        if (service) {
+          setServiceName(service.name);
+          setServicePrice(service.price);
+        }
+      }
+      
+      // 🆕 SIMPLIFICACIÓN: Cargar nombre y precio del servicio manual si existe
+      if (base.serviceName) {
+        setServiceName(base.serviceName);
+      }
+      
+      if (base.listPrice) {
+        setServicePrice(base.listPrice);
+      }
+      
       setClientId(base.clientId);
       setStatus(base.status ?? 'pending');
       setAssignedTo(base.assignedTo);
+
+      // 🆕 SIMPLIFICACIÓN: Generar título automáticamente si no existe
+      if (base.serviceName && base.title === 'Turno' && base.clientId) {
+        // Buscar el cliente para generar el título
+        const client = await db.clients.get(base.clientId);
+        if (client) {
+          const generatedTitle = `${client.name} - ${base.serviceName}`;
+          setTitle(generatedTitle);
+        }
+      }
 
 
 
@@ -193,20 +228,19 @@ export default function AppointmentForm({
     })();
   }, [editingBaseId, occurrenceStartISO]);
 
-  // Auto-generar título basado en cliente y servicio
+  // Auto-generar título basado en cliente y servicio (solo para nuevos turnos)
   useEffect(() => {
-    if (clientId && serviceId && !title) {
+    if (clientId && serviceName && (!title || title === 'Turno') && !editingBaseId) {
       (async () => {
-        const [client, service] = await Promise.all([
-          db.clients.get(clientId),
-          db.services.get(serviceId)
-        ]);
-        if (client && service) {
-          setTitle(`${service.name} - ${client.name}`);
+        const client = await db.clients.get(clientId);
+        
+        if (client && serviceName) {
+          const generatedTitle = `${client.name} - ${serviceName}`;
+          setTitle(generatedTitle);
         }
       })();
     }
-  }, [clientId, serviceId, title]);
+  }, [clientId, title, editingBaseId]); // 🆕 Solo para nuevos turnos
 
   // Cuando arranca repetición semanal → no autoselecciona día
   useEffect(() => {
@@ -219,8 +253,13 @@ export default function AppointmentForm({
     e.preventDefault();
     setError(null);
 
-    if (!serviceId) {
-      setError('Tenés que seleccionar un servicio.');
+    if (!serviceName.trim()) {
+      setError('Tenés que escribir qué servicio estás dando.');
+      return;
+    }
+
+    if (!servicePrice || Number(servicePrice) <= 0) {
+      setError('Tenés que especificar el precio del servicio.');
       return;
     }
 
@@ -265,7 +304,9 @@ export default function AppointmentForm({
       durationMin,
       isRecurring,
       rrule: isRecurring ? { freq, interval, byweekday } : undefined,
-      serviceId,
+      // 🆕 SIMPLIFICACIÓN: Usar nombre del servicio en lugar de ID
+      serviceName: serviceName.trim(),
+      serviceId: null, // Enviar null en lugar de string vacío
       clientId,
 
       //  🆕 estado + empleado asignado
@@ -284,6 +325,8 @@ export default function AppointmentForm({
       paymentNotes: paymentNotes || undefined,
     };
 
+
+
     try {
       if (editingBaseId) {
         // Si solo estamos cambiando el status, usar el smart status update
@@ -293,7 +336,7 @@ export default function AppointmentForm({
             baseAppointment.title === payload.title &&
             baseAppointment.startDateTime === payload.startDateTime &&
             baseAppointment.durationMin === payload.durationMin &&
-            baseAppointment.serviceId === payload.serviceId &&
+            baseAppointment.serviceName === payload.serviceName &&
             baseAppointment.clientId === payload.clientId &&
             baseAppointment.assignedTo === payload.assignedTo) {
           
@@ -436,47 +479,36 @@ export default function AppointmentForm({
             />
           </label>
 
-          {/* Servicio */}
-          <label className="block">
-            <span className="text-sm text-zinc-700 dark:text-zinc-300">Servicio</span>
-            {servicesLoading ? (
-              <div className="mt-1 h-10 bg-zinc-200 dark:bg-zinc-700 animate-pulse rounded-lg"></div>
-            ) : (
-              <select
-                value={serviceId}
-                onChange={(e) => setServiceId(e.target.value)}
+          {/* 🆕 SIMPLIFICACIÓN: Servicio manual */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label className="block">
+              <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                ¿Qué servicio estás dando?
+              </span>
+              <input
+                type="text"
+                value={serviceName}
+                onChange={(e) => setServiceName(e.target.value)}
                 className={inputCls}
+                placeholder="Ej: Corte, Color, Peinado..."
                 disabled={isFormDisabled}
-              >
-                <option value="">Seleccioná un servicio...</option>
-                
-                {/* Mis servicios primero */}
-                {services?.filter((s: any) => s.createdBy === user?.id).map((s: any) => (
-                  <option key={s.id} value={s.id} className="font-medium">
-                    👤 {s.name} — ${s.price} (mío)
-                  </option>
-                ))}
-                
-                {/* Separador si hay servicios de otros */}
-                {services?.some((s: any) => s.createdBy !== user?.id) && (
-                  <option disabled>───────────</option>
-                )}
-                
-                {/* Servicios de otros */}
-                {services?.filter((s: any) => s.createdBy !== user?.id).map((s: any) => {
-                  const creator = userProfiles?.find((p: any) => p.id === s.createdBy);
-                  const creatorName = creator ? creator.name : 'Sistema';
-                  const creatorRole = creator ? `(${creator.role})` : '';
-                  
-                  return (
-                    <option key={s.id} value={s.id}>
-                      {s.name} — ${s.price} • {creatorName} {creatorRole}
-                    </option>
-                  );
-                })}
-              </select>
-            )}
-          </label>
+              />
+            </label>
+            
+            <label className="block">
+              <span className="text-sm text-zinc-700 dark:text-zinc-300">Precio del servicio</span>
+              <input
+                type="number"
+                value={servicePrice}
+                onChange={(e) => setServicePrice(e.target.value === '' ? '' : Number(e.target.value))}
+                className={inputCls}
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+                disabled={isFormDisabled}
+              />
+            </label>
+          </div>
 
           {/* 🆕 Empleado asignado */}
           <label className="block">

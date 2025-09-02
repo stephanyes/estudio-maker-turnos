@@ -23,7 +23,9 @@ Un sistema completo de gestión para salones de belleza, barberías y spas con m
 - **Métricas de tiempo** y productividad
 - **Estadísticas detalladas** del negocio
 
-### **💰 Sistema de Pagos**
+### **💰 Sistema de Pagos Simplificado**
+- **Servicios manuales** integrados en turnos
+- **Precios personalizados** por cita
 - **Múltiples métodos** de pago
 - **Descuentos y promociones**
 - **Estado de pagos** en tiempo real
@@ -83,7 +85,6 @@ Un sistema completo de gestión para salones de belleza, barberías y spas con m
 ### **💰 Vistas de Negocio**
 | Vista | Componente | Descripción |
 |-------|------------|-------------|
-| **Precios** | `PriceView` | Gestión de precios y servicios |
 | **Competencia** | `CompetitorsView` | Monitoreo de precios de competencia |
 
 ### **🔧 Vistas de Desarrollo**
@@ -94,8 +95,10 @@ Un sistema completo de gestión para salones de belleza, barberías y spas con m
 ## 📚 **Documentación**
 
 ### **Monitoreo de Competencia**
-- **[Flow del Scraper](./SCRAPER_FLOW.md)** - Diagrama visual del flujo de datos
 - **[README Completo del Scraper](./COMPETITORS_SCRAPER_README.md)** - Documentación técnica detallada
+
+### **Sistema de Pagos Simplificado**
+- **[Changelog de Simplificación](./CHANGELOG_SIMPLIFICACION_PAGOS.md)** - Documentación completa de cambios y mejoras
 
 ## 🚀 **Inicio Rápido**
 

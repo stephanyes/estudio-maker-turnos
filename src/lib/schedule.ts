@@ -177,7 +177,7 @@ export async function getOccurrences(rangeStartISO: string, rangeEndISO: string)
           start: start.toISO()!,
           end: end.toISO()!,
           title: a.title,
-          serviceId: a.serviceId,
+          serviceId: a.serviceId || '', // 🆕 Manejar null convirtiendo a string vacío
           clientId: a.clientId,
           status,
           // 🆕 Incluir los campos de timer
@@ -233,7 +233,7 @@ export async function getOccurrences(rangeStartISO: string, rangeEndISO: string)
         start: start2.toISO()!,
         end: end2.toISO()!,
         title: a.title,
-        serviceId: a.serviceId,
+        serviceId: a.serviceId || '', // 🆕 Manejar null convirtiendo a string vacío
         clientId: a.clientId,
         status,
         // 🆕 Para citas recurrentes, los campos de timer vienen del appointment base

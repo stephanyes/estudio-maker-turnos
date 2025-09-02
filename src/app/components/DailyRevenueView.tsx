@@ -4,6 +4,7 @@ import { DateTime } from 'luxon';
 import { useDailyRevenue, useDailyTraffic } from '@/lib/queries';
 import { useData } from '@/app/context/DataProvider';
 import { Calendar, DollarSign, CreditCard, Banknote, ArrowLeftRight, Users, Clock, Plus, Edit3 } from 'lucide-react';
+import LoadingSpinner from './LoadingSpinner';
 import WalkInForm from './WalkInForm';
 import { Appointment, WalkIn } from '@/lib/supabase-db';
 
@@ -60,12 +61,11 @@ export default function DailyRevenueView() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[80vh]">
-        <div className="flex flex-col items-center justify-center gap-4 text-center">
-          <div className="animate-spin w-10 h-10 border-3 border-sky-500 border-t-transparent rounded-full flex-shrink-0"></div>
-          <span className="text-zinc-600 dark:text-zinc-400 font-medium">Cargando información del día...</span>
-        </div>
-      </div>
+      <LoadingSpinner 
+        message="Cargando información del día..." 
+        variant="black"
+        size="large"
+      />
     );
   }
 

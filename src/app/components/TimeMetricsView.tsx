@@ -4,6 +4,7 @@ import { DateTime } from 'luxon';
 import { useTimeMetrics, useEmployeeProductivity } from '@/lib/queries';
 import { useData } from '@/app/context/DataProvider';
 import { Clock, TrendingUp, TrendingDown, Target, Users, BarChart3, RefreshCw } from 'lucide-react';
+import LoadingSpinner from './LoadingSpinner';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   ResponsiveContainer,
@@ -98,12 +99,11 @@ export default function TimeMetricsView() {
 
   if (isLoading && !timeMetrics) {
     return (
-      <div className="flex items-center justify-center min-h-[80vh]">
-        <div className="flex flex-col items-center justify-center gap-4 text-center">
-          <div className="animate-spin w-10 h-10 border-3 border-sky-500 border-t-transparent rounded-full flex-shrink-0"></div>
-          <span className="text-zinc-600 dark:text-zinc-400 font-medium">Cargando métricas de tiempo...</span>
-        </div>
-      </div>
+      <LoadingSpinner 
+        message="Cargando métricas de tiempo..." 
+        variant="black"
+        size="large"
+      />
     );
   }
 
@@ -429,7 +429,7 @@ export default function TimeMetricsView() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 uppercase">
                     Real
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-zinc-700 uppercase">
                     Variación
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-zinc-500 uppercase">
@@ -452,7 +452,7 @@ export default function TimeMetricsView() {
                     <td className="px-4 py-3 text-sm">
                       <span className={`px-2 py-1 rounded-full text-xs ${
                         apt.variance > 10 ? 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300' :
-                        apt.variance < -10 ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300' :
+                        apt.variance < -10 ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-red-300' :
                         'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
                       }`}>
                         {apt.variance > 0 ? '+' : ''}{apt.variance}%

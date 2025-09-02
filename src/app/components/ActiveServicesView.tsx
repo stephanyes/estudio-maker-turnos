@@ -5,6 +5,7 @@ import { useDailyRevenue, useUserProfiles } from '@/lib/queries';
 import { Appointment, WalkIn } from '@/lib/supabase-db';
 import ServiceTimerControl from './ServiceTimerControl';
 import { Timer, Calendar, User, Clock, Play, DollarSign, CheckCircle } from 'lucide-react';
+import LoadingSpinner from './LoadingSpinner';
 
 export default function ActiveServicesView() {
   const [selectedDate, setSelectedDate] = useState(DateTime.now().toFormat('yyyy-LL-dd'));
@@ -56,12 +57,11 @@ export default function ActiveServicesView() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[80vh]">
-        <div className="flex flex-col items-center justify-center gap-4 text-center">
-          <div className="animate-spin w-10 h-10 border-3 border-sky-500 border-t-transparent rounded-full flex-shrink-0"></div>
-          <span className="text-zinc-600 dark:text-zinc-400 font-medium">Cargando servicios activos...</span>
-        </div>
-      </div>
+      <LoadingSpinner 
+        message="Cargando servicios activos..." 
+        variant="black"
+        size="large"
+      />
     );
   }
 

@@ -16,6 +16,10 @@ export function DataLoadingProvider({
   const { loading, hasErrors, errors, retry, canRetry, isCoreDataReady } = useData();
   const { user, loading: authLoading } = useAuth();
   
+  // 🎯 DEBUG: Pantalla de carga permanente para evaluar diseño
+  // TODO: Quitar esto cuando termine el debugging
+  // return <>{fallback}</>;
+  
   // console.log('🔄 DataLoadingProvider: Estado actual:', {
   //   hasUser: !!user,
   //   authLoading,
@@ -148,10 +152,10 @@ function DefaultLoadingFallback() {
         textAlign: 'center',
         background: 'linear-gradient(135deg, #fefefe 0%, #f8f8f0 100%)',
         borderRadius: '24px',
-        padding: '48px',
+        padding: '40px 30px',
         boxShadow: '0 30px 60px rgba(0, 0, 0, 0.25), 0 10px 20px rgba(0, 0, 0, 0.15)',
         border: '2px solid rgba(0, 0, 0, 0.1)',
-        maxWidth: '420px',
+        maxWidth: '600px',
         width: '90%',
         position: 'relative'
       }}>
@@ -165,85 +169,46 @@ function DefaultLoadingFallback() {
           background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%)',
           borderRadius: '24px 24px 0 0'
         }}></div>
-        {/* Logo/Icono animado */}
-        <div style={{ position: 'relative', marginBottom: '24px' }}>
+        {/* Logo estático - TOMA TODO EL ESPACIO DISPONIBLE */}
+        <div style={{ marginBottom: '40px' }}>
           <div style={{
-            width: '80px',
-            height: '80px',
-            margin: '0 auto',
-            background: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)',
-            borderRadius: '16px',
-            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
+            width: '100%',
+            height: '220px',
+            margin: '0 auto'
           }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <span style={{
-                fontSize: '24px',
-                fontWeight: 'bold',
-                color: '#0ea5e9'
-              }}>S</span>
-            </div>
+            <img 
+              src="/assets/imgs/estudio_maker_black.PNG" 
+              alt="Estudio Maker"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain'
+              }}
+            />
           </div>
-          {/* Anillo de carga */}
-          <div style={{
-            position: 'absolute',
-            inset: '0',
-            width: '80px',
-            height: '80px',
-            margin: '0 auto',
-            border: '4px solid #e0f2fe',
-            borderTop: '4px solid #0ea5e9',
-            borderRadius: '16px',
-            animation: 'spin 1s linear infinite'
-          }}></div>
         </div>
         
-        {/* Texto principal */}
-        <div style={{ marginBottom: '24px' }}>
-          <h1 style={{
-            fontSize: '32px',
-            fontWeight: 'bold',
-            background: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            marginBottom: '8px'
-          }}>
-            Estudio Maker
-          </h1>
-          <p style={{
-            color: '#475569',
-            fontWeight: '500',
-            fontSize: '16px'
-          }}>
-            Cargando...
-          </p>
-        </div>
-        
-        {/* Indicador de progreso */}
-        <div style={{
-          width: '192px',
-          height: '4px',
-          backgroundColor: '#e2e8f0',
-          borderRadius: '4px',
-          overflow: 'hidden',
-          margin: '0 auto'
+        {/* Indicador de carga elegante - 3 puntos animados */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          gap: '8px',
+          marginTop: '20px'
         }}>
-          <div style={{
-            height: '100%',
-            background: 'linear-gradient(90deg, #0ea5e9 0%, #2563eb 100%)',
-            borderRadius: '4px',
-            animation: 'pulse 2s ease-in-out infinite'
-          }}></div>
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              style={{
+                width: '8px',
+                height: '8px',
+                backgroundColor: '#0ea5e9',
+                borderRadius: '50%',
+                animation: `bounce 1.4s ease-in-out infinite both`,
+                animationDelay: `${i * 0.16}s`
+              }}
+            />
+          ))}
         </div>
       </div>
       
@@ -255,6 +220,14 @@ function DefaultLoadingFallback() {
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.5; }
+        }
+        @keyframes bounce {
+          0%, 80%, 100% {
+            transform: scale(0);
+          }
+          40% {
+            transform: scale(1);
+          }
         }
       `}</style>
     </div>

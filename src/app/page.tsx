@@ -11,7 +11,7 @@ import { resetSupabaseTenant } from '@/lib/reset-db';
 import StatsBar from './components/StatsBar';
 import StatsView  from './components/StatsView';
 import DevTools from './components/DevTools';
-import PricesView from './components/PriceView';
+
 // import ThemeToggle from './components/ThemeToggle'; 
 import ClientsView from './components/ClientsView';
 import FollowUpView from './components/FollowUpView';
@@ -23,6 +23,7 @@ import AdminDashboard from './components/AdminDashboard';
 import CompetitorsView from './components/CompetitorsView';
 import { ProtectedRoute } from './components/Auth/LoginForm';
 import { usePermissions, useAuth } from './context/AuthContext';
+import Logo from './components/Logo';
 
 import { 
   Download, 
@@ -45,7 +46,7 @@ import {
   Shield
 } from "lucide-react";
 
-type View = 'week' | 'prices' | 'stats' | 'clients' | 'followup' | 'daily' | 'traffic' | 'staff' | 'timing' | 'dev' | 'admin' | 'competitors';
+type View = 'week' | 'stats' | 'clients' | 'followup' | 'daily' | 'traffic' | 'staff' | 'timing' | 'dev' | 'admin' | 'competitors';
 
 export default function Home() {
   const [view, setView] = useState<View>('week');
@@ -76,7 +77,7 @@ export default function Home() {
     await resetSupabaseTenant();
   }
 
-  const handlePrices = () => setView('prices');
+
   const handleStats = () => setView('stats');
   const handleWeek = () => setView('week');
 
@@ -95,17 +96,26 @@ export default function Home() {
       <main className="space-y-4">
         {/* Header */}
         <div className="card flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          {/* Mobile Menu Button */}
-          <div className="flex items-center justify-between md:hidden px-4">
-            <div className="flex items-center gap-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-sky-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">S</span>
-              </div>
-                              <h1 className="text-xl font-bold text-zinc-900">Estudio Maker</h1>
-            </div>
+                    {/* Mobile Menu Button */}
+          <div className="flex items-center justify-between md:hidden">
+            {/* Logo izquierda */}
+            <img 
+              src="/assets/imgs/logo.PNG" 
+              alt="Logo" 
+              className="w-16 h-16 object-contain"
+            />
+            
+            {/* Texto centro */}
+            <img 
+              src="/assets/imgs/estudio_maker_black.PNG" 
+              alt="Estudio Maker" 
+              className="h-14 object-contain"
+            />
+            
+            {/* Hamburger menu derecha - centrado verticalmente */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 transition-colors"
+              className="p-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 transition-colors flex items-center justify-center"
             >
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -225,18 +235,7 @@ export default function Home() {
                 </button>
               )}
               
-                            {/* Precios - Solo Admin */}
-              {permissions.canManagePrices && (
-                <button
-                  onClick={handlePrices}
-                  className={`flex-1 sm:flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
-                            hover:bg-zinc-100
-                          ${view === 'prices' ? 'bg-sky-100 text-sky-700' : ''}`}
-                >
-                  <DollarSign size={16} />
-                  <span>Precios</span>
-                </button>
-              )}
+              
               
               {/* Competencia - Solo Admin */}
               {permissions.canViewCompetitors && (
@@ -445,17 +444,7 @@ export default function Home() {
                         <span>Tráfico</span>
                       </button>
                     )}
-                    {permissions.canManagePrices && (
-                      <button
-                        onClick={() => { handlePrices(); setMobileMenuOpen(false); }}
-                        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm ${
-                          view === 'prices' ? 'bg-sky-100 text-sky-700' : 'hover:bg-zinc-50'
-                        }`}
-                      >
-                        <DollarSign size={16} />
-                        <span>Precios</span>
-                      </button>
-                    )}
+
                     {permissions.canViewCompetitors && (
                       <button
                         onClick={() => { handleCompetitors(); setMobileMenuOpen(false); }}
@@ -590,11 +579,7 @@ export default function Home() {
           </div>
         )}
         
-        {view === 'prices' && permissions.canManagePrices && (
-          <div className="card p-4">
-            <PricesView />
-          </div>
-        )}
+
         {view === 'stats' && permissions.canViewStats && (
           <div className="card p-4">
             <StatsView />

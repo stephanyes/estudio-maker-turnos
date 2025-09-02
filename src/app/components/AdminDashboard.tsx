@@ -18,6 +18,7 @@ import {
   UserX,
   RotateCcw
 } from 'lucide-react';
+import LoadingSpinner from './LoadingSpinner';
 
 export default function AdminDashboard() {
   const { createUserByAdmin, updateUserRole, deleteUser, getAllUsers, reactivateUser, user } = useAuth();
@@ -158,12 +159,11 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[80vh] bg-gray-50 dark:bg-gray-900">
-        <div className="flex flex-col items-center justify-center gap-4 text-center">
-          <div className="animate-spin w-10 h-10 border-3 border-cyan-500 border-t-transparent rounded-full flex-shrink-0"></div>
-          <span className="text-gray-600 dark:text-gray-300 font-medium">Cargando usuarios...</span>
-        </div>
-      </div>
+      <LoadingSpinner 
+        message="Cargando usuarios..." 
+        variant="black"
+        size="large"
+      />
     );
   }
 

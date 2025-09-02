@@ -4,6 +4,7 @@ import { DateTime } from 'luxon';
 import { useTrafficForPeriod } from '@/lib/queries';
 import { useData } from '@/app/context/DataProvider';
 import { Users, Calendar, TrendingUp, BarChart3, Clock } from 'lucide-react';
+import LoadingSpinner from './LoadingSpinner';
 import {
   ResponsiveContainer,
   BarChart,
@@ -83,12 +84,11 @@ export default function TrafficView() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[80vh]">
-        <div className="flex flex-col items-center justify-center gap-4 text-center">
-          <div className="animate-spin w-10 h-10 border-3 border-sky-500 border-t-transparent rounded-full flex-shrink-0"></div>
-          <span className="text-zinc-600 dark:text-zinc-400 font-medium">Cargando estadísticas de tráfico...</span>
-        </div>
-      </div>
+      <LoadingSpinner 
+        message="Cargando estadísticas de tráfico..." 
+        variant="black"
+        size="large"
+      />
     );
   }
 

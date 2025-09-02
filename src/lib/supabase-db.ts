@@ -43,7 +43,8 @@ export type ClientHistory = {
 export type Appointment = {
   id: string;
   clientId?: string;
-  serviceId: string;
+  serviceId: string | null; // 🆕 SIMPLIFICACIÓN: Permitir null para servicios manuales
+  serviceName?: string; // 🆕 SIMPLIFICACIÓN: Nombre del servicio manual
   title?: string;
   startDateTime: string;
   durationMin: number;
@@ -183,6 +184,7 @@ function toAppointment(data: any): Appointment {
     id: data.id,
     clientId: data.client_id,
     serviceId: data.service_id,
+    serviceName: data.service_name, // 🆕 SIMPLIFICACIÓN: Agregar mapeo de service_name
     title: data.title,
     startDateTime: data.start_date_time,
     durationMin: data.duration_min,
@@ -519,6 +521,7 @@ export const appointments = {
         created_by: user.id,
         client_id: appointment.clientId ?? null,
         service_id: appointment.serviceId,
+        service_name: appointment.serviceName ?? null, // 🆕 SIMPLIFICACIÓN: Agregar nombre del servicio
         title: appointment.title ?? null,
         start_date_time: appointment.startDateTime,
         duration_min: appointment.durationMin,
@@ -582,6 +585,7 @@ export const appointments = {
         created_by: user.id,
         client_id: appointment.clientId ?? null,
         service_id: appointment.serviceId,
+        service_name: appointment.serviceName ?? null, // 🆕 SIMPLIFICACIÓN: Agregar nombre del servicio
         title: appointment.title ?? null,
         start_date_time: appointment.startDateTime,
         duration_min: appointment.durationMin,
@@ -1125,7 +1129,6 @@ export const userProfiles = {
       .order('name');
     
     if (error) throw error;
-    console.log('🔍 userProfiles.toArray() - raw data:', data);
     return data.map(toUserProfile);
   },
 

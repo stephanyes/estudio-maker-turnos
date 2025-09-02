@@ -4,6 +4,7 @@ import { useClientsAtRiskCached, useMarkReminderSent } from '@/lib/queries';
 import { useData } from '@/app/context/DataProvider';
 import { DateTime } from 'luxon';
 import { AlertTriangle, Clock, User, Calendar, Phone, MessageCircle, Instagram, Settings, Filter, CheckCircle, Copy } from 'lucide-react';
+import LoadingSpinner from './LoadingSpinner';
 
 type RiskLevel = 'low' | 'medium' | 'high';
 type ClientAtRisk = {
@@ -72,12 +73,11 @@ export default function FollowUpView() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[80vh]">
-        <div className="flex flex-col items-center justify-center gap-4 text-center">
-          <div className="animate-spin w-10 h-10 border-3 border-sky-500 border-t-transparent rounded-full flex-shrink-0"></div>
-          <span className="text-zinc-600 dark:text-zinc-400 font-medium">Cargando clientes...</span>
-        </div>
-      </div>
+      <LoadingSpinner 
+        message="Cargando clientes..." 
+        variant="black"
+        size="large"
+      />
     );
   }
 
