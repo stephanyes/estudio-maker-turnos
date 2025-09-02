@@ -1,7 +1,7 @@
 import { computeContentHash, parseCurrencyToNumber } from './utils';
 import { categorizeService, normalizeServiceName } from './normalize';
 import type { CompetitorPriceRecord, ScrapeResult } from './types';
-import { writeDebugText } from './fs-debug';
+// import { writeDebugText } from './fs-debug';
 import { execSync } from 'child_process';
 import { writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
@@ -67,7 +67,8 @@ export async function scrapeMala(
       if (!retryType.includes('pdf')) throw new Error('Contenido no es PDF');
       const retryBuffer = Buffer.from(await retryRes.arrayBuffer());
       const textRetry = await extractPdfText(retryBuffer);
-      const debugPath = await writeDebugText(`mala-${Date.now()}.txt`, textRetry.slice(0, 200000));
+      // const debugPath = await writeDebugText(`mala-${Date.now()}.txt`, textRetry.slice(0, 200000));
+      const debugPath = undefined;
       return buildResultFromText(textRetry, retryUrl, retryRes, computeContentHash(retryBuffer.toString('binary')), debugPath);
     }
     throw new Error('Contenido no es PDF');
@@ -79,7 +80,8 @@ export async function scrapeMala(
 
   // parse PDF -> text
   const text = await extractPdfText(buffer);
-  const debugPath = await writeDebugText(`mala-${Date.now()}.txt`, text.slice(0, 200000));
+  // const debugPath = await writeDebugText(`mala-${Date.now()}.txt`, text.slice(0, 200000));
+  const debugPath = undefined;
   return buildResultFromText(text, pdfUrl, res, contentHash, debugPath);
 }
 

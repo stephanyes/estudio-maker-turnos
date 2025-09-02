@@ -383,9 +383,9 @@ export default function WeekView3({ onChanged }: Props) {
                   
                   // Debug: mostrar todos los eventos del día para verificar
                   if (hour === 9 && minute === 0) {
-                    console.log('🔍 Debug - Todos los eventos del día:', getEventsForDay(expandedDay));
-                    console.log('🔍 Debug - Eventos filtrados por slot:', slotEvents);
-                    console.log('🌍 Debug - Zona horaria del navegador:', Intl.DateTimeFormat().resolvedOptions().timeZone);
+                            // console.log('🔍 Debug - Todos los eventos del día:', getEventsForDay(expandedDay));
+        // console.log('🔍 Debug - Eventos filtrados por slot:', slotEvents);
+        // console.log('🌍 Debug - Zona horaria del navegador:', Intl.DateTimeFormat().resolvedOptions().timeZone);
                     console.log('🌍 Debug - Hora actual local:', DateTime.now().toLocal().toFormat('HH:mm'));
                     console.log('🌍 Debug - Hora actual UTC:', DateTime.now().toUTC().toFormat('HH:mm'));
                   }

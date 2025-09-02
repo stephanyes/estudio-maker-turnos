@@ -16,33 +16,33 @@ export function DataLoadingProvider({
   const { loading, hasErrors, errors, retry, canRetry, isCoreDataReady } = useData();
   const { user, loading: authLoading } = useAuth();
   
-  console.log('🔄 DataLoadingProvider: Estado actual:', {
-    hasUser: !!user,
-    authLoading,
-    loadingCore: loading.core,
-    hasErrors,
-    isCoreDataReady,
-    willShowLoading: loading.core || !isCoreDataReady,
-    willShowError: hasErrors,
-    willShowApp: !hasErrors && isCoreDataReady
-  });
+  // console.log('🔄 DataLoadingProvider: Estado actual:', {
+  //   hasUser: !!user,
+  //   authLoading,
+  //   loadingCore: loading.core,
+  //   hasErrors,
+  //   isCoreDataReady,
+  //   willShowLoading: loading.core || !isCoreDataReady,
+  //   willShowError: hasErrors,
+  //   willShowApp: !hasErrors && isCoreDataReady
+  // });
   
   // 🎯 CONDICIÓN CRÍTICA: Si no está autenticado, mostrar la app normalmente
   // (el login se maneja en ProtectedRoute)
   if (!user && !authLoading) {
-    console.log('🔄 DataLoadingProvider: No hay usuario, mostrando app');
+    // console.log('🔄 DataLoadingProvider: No hay usuario, mostrando app');
     return <>{children}</>;
   }
 
   // Si está cargando autenticación, mostrar loading
   if (authLoading) {
-    console.log('🔄 DataLoadingProvider: Auth loading, mostrando loading');
+    // console.log('🔄 DataLoadingProvider: Auth loading, mostrando loading');
     return <>{fallback}</>;
   }
 
   // Si hay errores críticos, mostrar pantalla de error
   if (hasErrors) {
-    console.log('🔄 DataLoadingProvider: Hay errores, mostrando error screen');
+    // console.log('🔄 DataLoadingProvider: Hay errores, mostrando error screen');
     const criticalErrors = Object.entries(errors)
       .filter(([key, error]) => error && ['appointments', 'clients', 'services'].includes(key));
     
@@ -125,12 +125,12 @@ export function DataLoadingProvider({
 
   // Si los datos principales no están listos, mostrar loading
   if (loading.core || !isCoreDataReady) {
-    console.log('🔄 DataLoadingProvider: Core data loading, mostrando loading');
+    // console.log('🔄 DataLoadingProvider: Core data loading, mostrando loading');
     return <>{fallback}</>;
   }
 
   // Todo listo, mostrar la aplicación
-  console.log('✅ DataLoadingProvider: All data ready, showing app');
+  // console.log('✅ DataLoadingProvider: All data ready, showing app');
   return <>{children}</>;
 }
 

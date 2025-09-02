@@ -175,7 +175,7 @@ git push origin main
 - **Debug files** para análisis de contenido
 
 ### **Herramientas de Debug:**
-- **Debug files** en `/public/competitors-debug/`
+- **Debug files** eliminados para producción
 - **Content hash** para verificar cambios
 - **Metadata** de cada scraping run
 - **Estado de cache** en tiempo real

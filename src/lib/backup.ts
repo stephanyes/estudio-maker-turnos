@@ -23,7 +23,7 @@ export async function exportJSON() {
 export async function importJSON(data: any) {
   if (!data || !data.version) throw new Error('Archivo inválido');
   
-  console.log('Importando datos:', data);
+      // console.log('Importando datos:', data);
 
   try {
     // No hay transacciones, hacer operaciones individuales
@@ -31,7 +31,7 @@ export async function importJSON(data: any) {
     
     // 1. Servicios
     if (data.services?.length) {
-      console.log(`Importando ${data.services.length} servicios...`);
+      // console.log(`Importando ${data.services.length} servicios...`);
       for (const service of data.services) {
         try {
           if (service.id && service.name && service.price !== undefined) {
@@ -45,7 +45,7 @@ export async function importJSON(data: any) {
 
     // 2. Clientes - usar add() porque no hay put()
     if (data.clients?.length) {
-      console.log(`Importando ${data.clients.length} clientes...`);
+      // console.log(`Importando ${data.clients.length} clientes...`);
       for (const client of data.clients) {
         try {
           if (client.name) {
@@ -61,7 +61,7 @@ export async function importJSON(data: any) {
 
     // 3. Citas
     if (data.appointments?.length) {
-      console.log(`Importando ${data.appointments.length} citas...`);
+      // console.log(`Importando ${data.appointments.length} citas...`);
       for (const appointment of data.appointments) {
         try {
           if (appointment.id && appointment.serviceId && appointment.startDateTime) {
@@ -75,7 +75,7 @@ export async function importJSON(data: any) {
 
     // 4. Excepciones
     if (data.exceptions?.length) {
-      console.log(`Importando ${data.exceptions.length} excepciones...`);
+      // console.log(`Importando ${data.exceptions.length} excepciones...`);
       for (const exception of data.exceptions) {
         try {
           if (exception.appointmentId && exception.originalDateTime && exception.type) {
@@ -89,7 +89,7 @@ export async function importJSON(data: any) {
       }
     }
 
-    console.log('Importación completada');
+    // console.log('Importación completada');
   } catch (error) {
     console.error('Error durante importación:', error);
     throw new Error(`Error al importar: ${error instanceof Error ? error.message : 'Error desconocido'}`);

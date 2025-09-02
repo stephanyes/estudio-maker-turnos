@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     const initializeAuth = async () => {
       try {
-        console.log('🔐 AuthContext: Iniciando inicialización de autenticación');
+        // console.log('🔐 AuthContext: Iniciando inicialización de autenticación');
         
         // Obtener sesión actual
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -91,26 +91,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        console.log('🔐 AuthContext: Sesión obtenida:', !!session);
+        // console.log('🔐 AuthContext: Sesión obtenida:', !!session);
         setSession(session);
 
         if (session?.user) {
-          console.log('🔐 AuthContext: Usuario encontrado, cargando perfil...');
+          // console.log('🔐 AuthContext: Usuario encontrado, cargando perfil...');
           setUser(session.user);
           const profile = await loadUserProfile(session.user.id);
           if (isMounted) {
             setUserProfile(profile);
-            console.log('🔐 AuthContext: Perfil cargado:', !!profile);
+            // console.log('🔐 AuthContext: Perfil cargado:', !!profile);
           }
         } else {
-          console.log('🔐 AuthContext: No hay usuario en sesión');
+          // console.log('🔐 AuthContext: No hay usuario en sesión');
         }
       } catch (error) {
         console.error('❌ AuthContext: Error en initializeAuth:', error);
       } finally {
         if (isMounted) {
           setLoading(false);
-          console.log('🔐 AuthContext: Inicialización completada, loading=false');
+          // console.log('🔐 AuthContext: Inicialización completada, loading=false');
         }
       }
     };
@@ -120,7 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Escuchar cambios de autenticación
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔐 AuthContext: Auth state change:', event, !!session?.user);
+        // console.log('🔐 AuthContext: Auth state change:', event, !!session?.user);
         
         if (!isMounted) return;
         

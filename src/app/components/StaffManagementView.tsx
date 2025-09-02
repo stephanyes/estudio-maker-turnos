@@ -25,15 +25,15 @@ export default function StaffManagementView() {
   const deleteScheduleMutation = useDeleteStaffSchedule();
 
   // Debug: verificar qué datos están llegando
-  console.log('🔍 StaffManagementView - userProfiles:', userProfiles);
-  console.log('🔍 StaffManagementView - userProfiles[0]:', userProfiles[0]);
+      // console.log('🔍 StaffManagementView - userProfiles:', userProfiles);
+    // console.log('🔍 StaffManagementView - userProfiles[0]:', userProfiles[0]);
 
   // Separar empleados activos y eliminados
   const activeEmployees = userProfiles.filter(emp => emp.status === 'active');
   const deletedEmployees = userProfiles.filter(emp => emp.status === 'deleted');
 
-  console.log('🔍 StaffManagementView - activeEmployees:', activeEmployees);
-  console.log('🔍 StaffManagementView - deletedEmployees:', deletedEmployees);
+      // console.log('🔍 StaffManagementView - activeEmployees:', activeEmployees);
+    // console.log('🔍 StaffManagementView - deletedEmployees:', deletedEmployees);
 
   const days = [
     { name: 'Domingo', value: 0 },

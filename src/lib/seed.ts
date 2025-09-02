@@ -5,7 +5,7 @@ type IdMap = Record<string, string>;
 
 // Add seed data without clearing existing data (safer for testing)
 export async function addSeedData() {
-  console.log('🌱 Agregando datos de prueba (sin limpiar existentes)...');
+  // console.log('🌱 Agregando datos de prueba (sin limpiar existentes)...');
   try {
     const serviceIds = await seedServices();
     const clientIds = await seedClients();
@@ -14,7 +14,7 @@ export async function addSeedData() {
     await seedWalkIns(serviceIds, clientIds);
     await seedClientHistory();
 
-    console.log('✅ Datos de prueba agregados exitosamente');
+    // console.log('✅ Datos de prueba agregados exitosamente');
   } catch (error) {
     console.error('❌ Error al agregar datos:', error);
     throw error;
