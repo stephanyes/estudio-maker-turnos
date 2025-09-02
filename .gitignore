@@ -3,6 +3,7 @@ PROMPT
 TESTING.txt
 HOST.md
 package-lock.json
+RANDOM/
 
 # Variables de entorno - CRÍTICO para seguridad
 .env
