@@ -6,7 +6,7 @@ import WeekView4 from './components/WeekView4'; // Vista desktop estilo Google C
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { exportJSON, importJSON } from '@/lib/backup';
 import { saveAs } from 'file-saver';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { resetSupabaseTenant } from '@/lib/reset-db';
 import StatsBar from './components/StatsBar';
 import StatsView  from './components/StatsView';
@@ -131,227 +131,189 @@ export default function Home() {
             </button>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex flex-col sm:flex-row sm:flex-wrap gap-2 w-full">
+                    {/* Desktop Navigation */}
+          <div className="hidden md:flex w-full">
             <nav
               aria-label="Acciones"
-              className="flex flex-wrap gap-2 w-full sm:w-auto
+              className="flex items-center w-full
                         rounded-xl border border-zinc-200
-                        bg-white/70 p-2 shadow-sm backdrop-blur"
+                        bg-white/70 p-2 shadow-sm backdrop-blur
+                        min-w-0"
             >
-              {/* Exportar - Solo Admin */}
-              {permissions.canExportData && (
-              <button
-                onClick={handleExport}
-                className="flex-1 sm:flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
-                            hover:bg-zinc-100
-                          focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
-                title="Exportar a JSON"
-              >
-                <Download size={16} />
-                <span>Exportar</span>
-              </button>
-              )}
-
-              {/* Importar - Solo Admin */}
-              {permissions.canImportData && (
-              <label
-                htmlFor="import-json"
-                className="flex-1 sm:flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm cursor-pointer
-                            hover:bg-zinc-100
-                          focus-within:outline-none focus-within:ring-2 focus-within:ring-sky-500"
-                title="Importar desde JSON"
-              >
-                <Upload size={16} />
-                <span>Importar</span>
-              </label>
-              )}
-
-              {/* Reiniciar - Solo Admin */}
-              {permissions.canResetData && (
-              <button
-                onClick={handleReset}
-                className="flex-1 sm:flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
-                            border border-red-300
-                            text-red-700
-                            bg-red-50/80
-                            hover:bg-red-100
-                          focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300
-                          shadow-none"
-                title="Borrar base local"
-              >
-                <Trash2 size={16} />
-                <span>Reiniciar</span>
-              </button>
-              )}
-
-              {/* Separador visual */}
-              <div className="w-px h-6 bg-zinc-200 mx-1 hidden sm:block" />
-
               {/* Vistas principales */}
-              <button
-                onClick={handleWeek}
-                className={`flex-1 sm:flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
-                          hover:bg-zinc-100
-                          ${view === 'week' ? 'bg-sky-100 text-sky-700' : ''}`}
-              >
-                <CalendarDays size={16} />
-                <span>Agenda</span>
-              </button>
-
-              <button
-                onClick={handleDaily}
-                className={`flex-1 sm:flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
-                          hover:bg-zinc-100
-                          ${view === 'daily' ? 'bg-green-100 text-green-700' : ''}`}
-                title="Agenda del día con pagos"
-              >
-                <Receipt size={16} />
-                <span>Día</span>
-              </button>
-
-              <button
-                onClick={handleClients}
-                className={`flex-1 sm:flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
-                          hover:bg-zinc-100
-                          ${view === 'clients' ? 'bg-blue-100 text-blue-700' : ''}`}
-              >
-                <Users size={16} />
-                <span>Clientes</span>
-              </button>
-
-              <button
-                onClick={handleFollowUp}
-                className={`flex-1 sm:flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
-                          hover:bg-zinc-100
-                          ${view === 'followup' ? 'bg-orange-100 text-orange-700' : ''}`}
-                title="Clientes que necesitan seguimiento"
-              >
-                <AlertTriangle size={16} />
-                <span>Seguimiento</span>
-              </button>
-
-              {/* Vista de tráfico - Solo Admin */}
-              {permissions.canViewTraffic && (
+              <div className="flex items-center gap-2 flex-1 min-w-0">
                 <button
-                  onClick={handleTraffic}
-                  className={`flex-1 sm:flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
+                  onClick={handleWeek}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
                             hover:bg-zinc-100
-                            ${view === 'traffic' ? 'bg-purple-100 text-purple-700' : ''}`}
-                  title="Estadísticas de tráfico de personas"
+                            ${view === 'week' ? 'bg-sky-100 text-sky-700' : ''}`}
                 >
-                  <TrendingUp size={16} />
-                  <span>Tráfico</span>
+                  <CalendarDays size={16} />
+                  <span className="hidden 2xl:inline">Agenda</span>
                 </button>
-              )}
-              
-              
-              
-              {/* Competencia - Solo Admin */}
-              {permissions.canViewCompetitors && (
-                <button
-                  onClick={handleCompetitors}
-                  className={`flex-1 sm:flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
-                            hover:bg-zinc-100
-                          ${view === 'competitors' ? 'bg-emerald-100 text-emerald-700' : ''}`}
-                  title="Precios de la competencia"
-                >
-                  <TrendingUp size={16} />
-                  <span>Competencia</span>
-                </button>
-              )}
-              
-              {/* Estadísticas - Solo Admin */}
-              {permissions.canViewStats && (
-                <button
-                  onClick={handleStats}
-                  className={`flex-1 sm:flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
-                            hover:bg-zinc-100
-                            ${view === 'stats' ? 'bg-sky-100 text-sky-700' : ''}`}
-                >
-                  <BarChart3 size={16} />
-                  <span>Estadísticas</span>
-                </button>
-              )}
 
-              {/* Gestión de empleados - Solo Admin */}
-              {permissions.canManageStaff && (
-              <button
-                onClick={handleStaff}
-                className={`flex-1 sm:flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
+                <button
+                  onClick={handleDaily}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
+                            hover:bg-zinc-100
+                            ${view === 'daily' ? 'bg-green-100 text-green-700' : ''}`}
+                  title="Agenda del día con pagos"
+                >
+                  <Receipt size={16} />
+                  <span className="hidden 2xl:inline">Día</span>
+                </button>
+
+                <button
+                  onClick={handleClients}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
+                            hover:bg-zinc-100
+                            ${view === 'clients' ? 'bg-blue-100 text-blue-700' : ''}`}
+                >
+                  <Users size={16} />
+                  <span className="hidden xl:inline">Clientes</span>
+                </button>
+
+                <button
+                  onClick={handleFollowUp}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
+                            hover:bg-zinc-100
+                            ${view === 'followup' ? 'bg-orange-100 text-orange-700' : ''}`}
+                  title="Clientes que necesitan seguimiento"
+                >
+                  <AlertTriangle size={16} />
+                  <span className="hidden xl:inline">Seguimiento</span>
+                </button>
+
+                {/* Vista de tráfico - Solo Admin */}
+                {permissions.canViewTraffic && (
+                  <button
+                    onClick={handleTraffic}
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
+                              hover:bg-zinc-100
+                              ${view === 'traffic' ? 'bg-purple-100 text-purple-700' : ''}`}
+                    title="Estadísticas de tráfico de personas"
+                  >
+                    <TrendingUp size={16} />
+                    <span className="hidden lg:inline">Tráfico</span>
+                  </button>
+                )}
+                
+                {/* Competencia - Solo Admin */}
+                {permissions.canViewCompetitors && (
+                  <button
+                    onClick={handleCompetitors}
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
+                              hover:bg-zinc-100
+                              ${view === 'competitors' ? 'bg-emerald-100 text-emerald-700' : ''}`}
+                    title="Precios de la competencia"
+                  >
+                    <TrendingUp size={16} />
+                    <span className="hidden lg:inline">Competencia</span>
+                  </button>
+                )}
+                
+                {/* Estadísticas - Solo Admin */}
+                {permissions.canViewStats && (
+                  <button
+                    onClick={handleStats}
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
+                              hover:bg-zinc-100
+                              ${view === 'stats' ? 'bg-sky-100 text-sky-700' : ''}`}
+                  >
+                    <BarChart3 size={16} />
+                    <span className="hidden lg:inline">Estadísticas</span>
+                  </button>
+                )}
+
+                {/* Gestión de empleados - Solo Admin */}
+                {permissions.canManageStaff && (
+                <button
+                  onClick={handleStaff}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
                             hover:bg-zinc-100
                             ${view === 'staff' ? 'bg-teal-100 text-teal-700' : ''}`}
-                title="Gestión de empleados y horarios"
-              >
-                <UserCheck size={16} />
-                <span>Empleados</span>
-              </button>
-              )}
+                  title="Gestión de empleados y horarios"
+                >
+                  <UserCheck size={16} />
+                  <span className="hidden lg:inline">Empleados</span>
+                </button>
+                )}
 
-              <button
-                onClick={handleTiming}
-                className={`flex-1 sm:flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
-                          hover:bg-zinc-100
-                          ${view === 'timing' ? 'bg-indigo-100 text-indigo-700' : ''}`}
-                title="Métricas de tiempo y productividad"
-              >
-                <Timer size={16} />
-                <span>Tiempo</span>
-              </button>
-              
+                <button
+                  onClick={handleTiming}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
+                            hover:bg-zinc-100
+                            ${view === 'timing' ? 'bg-indigo-100 text-indigo-700' : ''}`}
+                  title="Métricas de tiempo y productividad"
+                >
+                  <Timer size={16} />
+                  <span className="hidden lg:inline">Tiempo</span>
+                </button>
+                
                 <button
                   onClick={handleDev}
-                  className={`flex-1 sm:flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
-                          hover:bg-zinc-100
-                          ${view === 'dev' ? 'bg-amber-100 text-amber-700' : ''}
-                          border border-amber-300`}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
+                            hover:bg-zinc-100
+                            ${view === 'dev' ? 'bg-amber-100 text-amber-700' : ''}
+                            border border-amber-300`}
                   title="Herramientas de desarrollo"
                 >
                   <Settings size={16} />
-                  <span>Dev</span>
+                  <span className="hidden lg:inline">Dev</span>
                 </button>
+              </div>
 
+              {/* Separador visual */}
+              <div className="w-px h-6 bg-zinc-200 mx-2 flex-shrink-0" />
+
+              {/* Controles de usuario */}
+              <div className="flex items-center gap-1 min-w-0">
                 {/* Dashboard de Administración - Solo Admin */}
                 {permissions.canAccessAdmin && (
                   <button
                     onClick={handleAdmin}
-                    className={`flex-1 sm:flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
-                            hover:bg-zinc-100
-                            ${view === 'admin' ? 'bg-purple-100 text-purple-700' : ''}
-                            border border-purple-200`}
+                    className={`inline-flex items-center gap-1 px-1.5 py-1.5 rounded-full text-sm
+                              hover:bg-zinc-100
+                              ${view === 'admin' ? 'bg-purple-100 text-purple-700' : ''}
+                              border border-purple-200
+                              whitespace-nowrap`}
                     title="Panel de administración"
                   >
-                    <Shield size={16} />
-                    <span>Admin</span>
+                    <Shield size={14} />
+                    <span className="hidden xl:inline">Admin</span>
                   </button>
                 )}
-            </nav>
 
-            <div className="sm:ml-auto flex items-center gap-2">
-              {/* Indicador de rol */}
-              {permissions.role && (
-                <div className="px-2 py-1 rounded-full text-xs font-medium
-                               bg-blue-100 text-blue-700
-                               border border-blue-200">
-                  {permissions.role === 'admin' ? '👑 Admin' : '👥 Staff'}
-                </div>
-              )}
-              
-              {/* Botón de Logout */}
-              <button
-                onClick={signOut}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
-                          border border-red-300
-                          text-red-700
-                          bg-red-50/80
-                          hover:bg-red-100
-                          focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300
-                          transition-colors"
-              >
-                <LogOut size={16} />
-                <span className="hidden sm:inline">Cerrar Sesión</span>
-              </button>
-            </div>
+                {/* Indicador de rol */}
+                {permissions.role && (
+                  <div className="px-1 py-1 rounded-full text-xs font-medium
+                                 bg-blue-100 text-blue-700
+                                 border border-blue-200
+                                 whitespace-nowrap">
+                    {permissions.role === 'admin' ? '👑' : '👥'}
+                    <span className="hidden xl:inline ml-1">
+                      {permissions.role === 'admin' ? 'Admin' : 'Staff'}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Botón de Logout */}
+                <button
+                  onClick={signOut}
+                  className="inline-flex items-center gap-1 px-1.5 py-1.5 rounded-full text-sm
+                            border border-red-300
+                            text-red-700
+                            bg-red-50/80
+                            hover:bg-red-100
+                            focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300
+                            transition-colors
+                            whitespace-nowrap"
+                >
+                  <LogOut size={14} />
+                  <span className="hidden xl:inline">Cerrar Sesión</span>
+                </button>
+              </div>
+            </nav>
           </div>
         </div>
 
@@ -635,7 +597,14 @@ export default function Home() {
         {/* Dashboard de Administración - Solo Admin */}
         {view === 'admin' && permissions.canAccessAdmin && (
           <div className="card p-4">
-            <AdminDashboard />
+            <AdminDashboard 
+              onExport={handleExport}
+              onImport={() => document.getElementById('import-json-admin')?.click()}
+              onReset={handleReset}
+              canExportData={permissions.canExportData}
+              canImportData={permissions.canImportData}
+              canResetData={permissions.canResetData}
+            />
           </div>
         )}
       </main>

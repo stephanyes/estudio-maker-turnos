@@ -5,15 +5,13 @@ import { useDailyRevenue, useDailyTraffic } from '@/lib/queries';
 import { useData } from '@/app/context/DataProvider';
 import { Calendar, DollarSign, CreditCard, Banknote, ArrowLeftRight, Users, Clock, Plus, Edit3 } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
-import WalkInForm from './WalkInForm';
-import { Appointment, WalkIn } from '@/lib/supabase-db';
+import { Appointment } from '@/lib/supabase-db';
 
 export default function DailyRevenueView() {
   const [selectedDate, setSelectedDate] = useState(DateTime.now().toFormat('yyyy-LL-dd'));
-  const [showWalkInForm, setShowWalkInForm] = useState(false);
 
   // 🎯 DataProvider para obtener datos básicos
-  const { appointments, walkIns } = useData();
+  const { appointments } = useData();
   
   const { 
     data: revenueData, 
@@ -103,13 +101,6 @@ export default function DailyRevenueView() {
             className="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-neutral-900 text-zinc-900 dark:text-zinc-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
           />
           
-          <button
-            onClick={() => setShowWalkInForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-500"
-          >
-            <Plus className="w-4 h-4" />
-            Registrar Walk-in
-          </button>
         </div>
       </div>
 
@@ -266,75 +257,8 @@ export default function DailyRevenueView() {
           </div>
         </div>
 
-        {/* Walk-ins */}
-        <div className="bg-white dark:bg-neutral-800 rounded-lg border border-zinc-200 dark:border-zinc-700">
-          <div className="p-4 border-b border-zinc-200 dark:border-zinc-700">
-            <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">
-              Walk-ins ({revenueData?.walkIns.length || 0})
-            </h3>
-          </div>
-
-          <div className="divide-y divide-zinc-200 dark:divide-zinc-700 max-h-96 overflow-y-auto">
-            {revenueData?.walkIns.map((walkIn: WalkIn) => (
-              <div key={walkIn.id} className="p-4">
-                <div className="rounded-lg border border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800 p-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium">
-                          {formatTime(walkIn.timestamp)}
-                        </span>
-                        <span className="px-2 py-0.5 bg-white/50 rounded text-xs">
-                          {walkIn.duration}min
-                        </span>
-                      </div>
-                      <div className="text-sm">
-                        {walkIn.serviceName || 'Walk-in'}
-                      </div>
-                      {walkIn.notes && (
-                        <div className="text-xs mt-1 opacity-75">
-                          {walkIn.notes}
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="text-right">
-                      <div className="flex items-center gap-1 mb-1">
-                        {getPaymentIcon(walkIn.paymentMethod)}
-                        <span className="text-xs capitalize">{walkIn.paymentMethod}</span>
-                      </div>
-                      <div className="font-bold text-green-700 dark:text-green-300">
-                        {currency.format(walkIn.finalPrice)}
-                      </div>
-                      {walkIn.discount && walkIn.discount > 0 && (
-                        <div className="text-xs text-green-600">
-                          -{walkIn.discount}%
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {(!revenueData?.walkIns || revenueData.walkIns.length === 0) && (
-              <div className="p-8 text-center text-zinc-500 dark:text-zinc-400">
-                <Users className="w-12 h-12 mx-auto mb-4 opacity-40" />
-                <p>No hay walk-ins registrados para este día</p>
-              </div>
-            )}
-          </div>
-        </div>
       </div>
 
-      {/* Modal de walk-in */}
-      {showWalkInForm && (
-        <WalkInForm
-          defaultDate={selectedDate}
-          onClose={() => setShowWalkInForm(false)}
-          onSaved={() => setShowWalkInForm(false)}
-        />
-      )}
     </div>
   );
 }

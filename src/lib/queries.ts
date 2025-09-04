@@ -6,7 +6,6 @@ import {
   Appointment,
   getDailyTraffic,
   getDailyRevenue,
-  WalkIn,
   UserProfile,
   StaffSchedule,
   calculateActualDuration,
@@ -26,7 +25,6 @@ export const queryKeys = {
   appointments: ['appointments'] as const,
   exceptions: ['exceptions'] as const,
   clientStats: ['clientStats'] as const,
-  walkIns: ['walkIns'] as const,
   userProfiles: ['userProfiles'] as const,
   staffSchedules: ['staffSchedules'] as const,
   clientsAtRisk: (days: number) => ['clientsAtRisk', days] as const,
@@ -35,7 +33,6 @@ export const queryKeys = {
   monthlyTopServices: (year: number, month: number) => ['monthlyTopServices', year, month] as const,
   dailyTraffic: (date: string) => ['dailyTraffic', date] as const,
   dailyRevenue: (date: string) => ['dailyRevenue', date] as const,
-  walkInsByDate: (date: string) => ['walkInsByDate', date] as const,
   staffSchedulesByUser: (userId: string) => ['staffSchedulesByUser', userId] as const,
   availableStaff: (dayOfWeek: number, time: string) => ['availableStaff', dayOfWeek, time] as const,
   timeMetrics: (period: string) => ['timeMetrics', period] as const,
@@ -560,69 +557,10 @@ export function useMarkReminderSent() {
   });
 }
 
-// 🆕 WALK-INS HOOKS
-export function useWalkIns() {
-  return useQuery({
-    queryKey: queryKeys.walkIns,
-    queryFn: () => db.walkIns.toArray(),
-    staleTime: 2 * 60 * 1000, // 2 minutos
-  });
-}
 
-export function useWalkInsByDate(date: string) {
-  return useQuery({
-    queryKey: queryKeys.walkInsByDate(date),
-    queryFn: () => db.walkIns.getByDate(date),
-    staleTime: 1 * 60 * 1000, // 1 minuto
-    enabled: !!date,
-  });
-}
 
-export function useCreateWalkIn() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (walkIn: Omit<WalkIn, 'id'>) => db.walkIns.add(walkIn),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.walkIns });
-      queryClient.invalidateQueries({ queryKey: queryKeys.walkInsByDate(variables.date) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dailyRevenue(variables.date) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dailyTraffic(variables.date) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.clientStats });
-    },
-  });
-}
 
-export function useUpdateWalkIn() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, changes }: { id: string; changes: Partial<WalkIn> }) => 
-      db.walkIns.update(id, changes),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.walkIns });
-      if (variables.changes.date) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.walkInsByDate(variables.changes.date) });
-        queryClient.invalidateQueries({ queryKey: queryKeys.dailyRevenue(variables.changes.date) });
-        queryClient.invalidateQueries({ queryKey: queryKeys.dailyTraffic(variables.changes.date) });
-      }
-      // Invalidar métricas de tiempo
-      queryClient.invalidateQueries({ queryKey: ['timeMetrics'] });
-      queryClient.invalidateQueries({ queryKey: ['employeeProductivity'] });
-    },
-  });
-}
 
-export function useDeleteWalkIn() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => db.walkIns.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.walkIns });
-      queryClient.invalidateQueries({ queryKey: ['walkInsByDate'] });
-      queryClient.invalidateQueries({ queryKey: ['dailyRevenue'] });
-      queryClient.invalidateQueries({ queryKey: ['dailyTraffic'] });
-    },
-  });
-}
 
 // 🆕 Hook personalizado para múltiples fechas
 export function useTrafficForPeriod(dates: string[]) {
@@ -1102,14 +1040,6 @@ export function useTimeMetrics(startDate: string, endDate: string) {
         )
       );
 
-      // Obtener walk-ins completados
-      const walkIns = await db.walkIns.toArray();
-      const periodWalkIns = walkIns.filter(wi => {
-        const wiDate = wi.date;
-        return wiDate >= startDate.split('T')[0] && 
-               wiDate <= endDate.split('T')[0] && 
-               wi.completedAt !== undefined;
-      });
 
       // 2) Pedimos esos servicios y armamos un mapa id -> nombre
       const servicesRows = await Promise.all(uniqueServiceIds.map(id => db.services.get(id)));
@@ -1117,7 +1047,7 @@ export function useTimeMetrics(startDate: string, endDate: string) {
       servicesRows.forEach(s => { if (s) serviceNameById[s.id] = s.name; });
 
       // Calcular métricas
-      const totalServices = completedAppointments.length + periodWalkIns.length;
+      const totalServices = completedAppointments.length;
       
       // Métricas de tiempo para appointments
       let totalEstimated = 0;
@@ -1134,26 +1064,14 @@ export function useTimeMetrics(startDate: string, endDate: string) {
         }
       });
 
-      // Métricas de tiempo para walk-ins
-      let walkInActualTime = 0;
-      let walkInEstimatedTime = 0;
-
-      periodWalkIns.forEach(wi => {
-        walkInEstimatedTime += wi.duration || 30;
-        if (wi.startedAt && wi.completedAt) {
-          walkInActualTime += calculateActualDuration(wi.startedAt, wi.completedAt) || 0;
-        }
-      });
-
-      const allEstimated = totalEstimated + walkInEstimatedTime;
-      const allActual = totalActual + walkInActualTime;
+      const allEstimated = totalEstimated;
+      const allActual = totalActual;
 
       // Log removido para optimización
 
       return {
         totalServices,
         appointments: completedAppointments.length,
-        walkIns: periodWalkIns.length,
         
         // Métricas de tiempo
         totalEstimatedMinutes: allEstimated,
@@ -1194,16 +1112,6 @@ export function useTimeMetrics(startDate: string, endDate: string) {
             assignedTo: apt.assignedTo
           }))
           .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()), // 🎯 Ordenar por fecha
-        
-        walkInDetails: periodWalkIns.map(wi => ({
-          id: wi.id,
-          serviceName: wi.serviceName,
-          estimated: wi.duration || 30,
-          actual: wi.startedAt && wi.completedAt ? 
-            calculateActualDuration(wi.startedAt, wi.completedAt) || 0 : 0,
-          date: wi.timestamp,
-          servedBy: wi.servedBy
-        }))
       };
     },
     staleTime: 2 * 60 * 1000, // 2 minutos - optimizado
@@ -1222,25 +1130,11 @@ export function useEmployeeProductivity(userId: string, startDate: string, endDa
         apt.assignedTo === userId && apt.status === 'done'
       );
 
-      const walkIns = await db.walkIns.toArray();
-      const userWalkIns = walkIns.filter(wi => {
-        const wiDate = wi.date;
-        return wiDate >= startDate.split('T')[0] && 
-               wiDate <= endDate.split('T')[0] && 
-               wi.servedBy === userId;
-      });
 
-      const totalServices = userAppointments.length + userWalkIns.length;
-      const totalRevenue = userAppointments.reduce((sum, apt) => sum + (apt.finalPrice || 0), 0) +
-                          userWalkIns.reduce((sum, wi) => sum + wi.finalPrice, 0);
+      const totalServices = userAppointments.length;
+      const totalRevenue = userAppointments.reduce((sum, apt) => sum + (apt.finalPrice || 0), 0);
 
-      const totalMinutes = userAppointments.reduce((sum, apt) => sum + (apt.actualDurationMin || apt.durationMin), 0) +
-                          userWalkIns.reduce((sum, wi) => {
-                            if (wi.startedAt && wi.completedAt) {
-                              return sum + (calculateActualDuration(wi.startedAt, wi.completedAt) || wi.duration || 30);
-                            }
-                            return sum + (wi.duration || 30);
-                          }, 0);
+      const totalMinutes = userAppointments.reduce((sum, apt) => sum + (apt.actualDurationMin || apt.durationMin), 0);
 
       return {
         userId,
@@ -1251,7 +1145,6 @@ export function useEmployeeProductivity(userId: string, startDate: string, endDa
         avgMinutesPerService: totalServices > 0 ? Math.round(totalMinutes / totalServices) : 0,
         revenuePerMinute: totalMinutes > 0 ? Math.round(totalRevenue / totalMinutes) : 0,
         appointments: userAppointments.length,
-        walkIns: userWalkIns.length
       };
     },
     staleTime: 10 * 60 * 1000, // 10 minutos

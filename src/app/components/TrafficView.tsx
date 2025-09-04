@@ -39,7 +39,7 @@ export default function TrafficView() {
   }, [selectedDate, viewMode]);
 
   // 🎯 DataProvider para obtener datos básicos
-  const { appointments, walkIns } = useData();
+  const { appointments } = useData();
   
   // En lugar de usar hooks dinámicos, crear un hook personalizado
   const { data: trafficData, isLoading, error: hasError } = useTrafficForPeriod(dates);
@@ -57,7 +57,6 @@ export default function TrafficView() {
         dayName: dateObj.toFormat('ccc'), // Lun, Mar, etc
         dayNumber: dateObj.day,
         appointments: data?.appointments || 0,
-        walkIns: data?.walkIns || 0,
         total: data?.total || 0,
       };
     });
@@ -67,7 +66,6 @@ export default function TrafficView() {
   const periodStats = useMemo(() => {
     const totalPeople = chartData.reduce((sum, day) => sum + day.total, 0);
     const totalAppointments = chartData.reduce((sum, day) => sum + day.appointments, 0);
-    const totalWalkIns = chartData.reduce((sum, day) => sum + day.walkIns, 0);
     const avgDaily = totalPeople / chartData.length;
     
     const maxDay = chartData.reduce((max, day) => day.total > max.total ? day : max, chartData[0] || { total: 0 });
@@ -75,7 +73,6 @@ export default function TrafficView() {
     return {
       totalPeople,
       totalAppointments,
-      totalWalkIns,
       avgDaily: Math.round(avgDaily * 10) / 10,
       busiestDay: maxDay,
       daysWithData: chartData.filter(day => day.total > 0).length,
@@ -172,12 +169,6 @@ export default function TrafficView() {
         <div className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-zinc-200 dark:border-zinc-700">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-orange-500" />
-            <div>
-              <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-                {periodStats.totalWalkIns}
-              </div>
-              <div className="text-sm text-zinc-500">Walk-ins</div>
-            </div>
           </div>
         </div>
 
@@ -218,10 +209,7 @@ export default function TrafficView() {
           <div>
             <span className="text-zinc-500">Ratio Walk-ins:</span>
             <span className="ml-2 font-medium text-zinc-900 dark:text-zinc-100">
-              {periodStats.totalPeople > 0 ? 
-                `${Math.round((periodStats.totalWalkIns / periodStats.totalPeople) * 100)}%` 
-                : '0%'
-              }
+              0%
             </span>
           </div>
         </div>
@@ -246,7 +234,7 @@ export default function TrafficView() {
                 <Tooltip
                   formatter={(value: number, name: string) => [
                     `${value} personas`,
-                    name === 'appointments' ? 'Citas' : name === 'walkIns' ? 'Walk-ins' : 'Total'
+                    name === 'appointments' ? 'Citas' : 'Total'
                   ]}
                   labelFormatter={(label) => 
                     viewMode === 'week' 
@@ -255,7 +243,6 @@ export default function TrafficView() {
                   }
                 />
                 <Bar dataKey="appointments" stackId="a" fill="#3B82F6" name="appointments" />
-                <Bar dataKey="walkIns" stackId="a" fill="#F59E0B" name="walkIns" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -328,7 +315,6 @@ export default function TrafficView() {
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
               {chartData.map((day, index) => {
-                const walkInPercentage = day.total > 0 ? (day.walkIns / day.total) * 100 : 0;
                 const isToday = day.date === DateTime.now().toFormat('yyyy-LL-dd');
                 
                 return (
@@ -358,24 +344,12 @@ export default function TrafficView() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100">
-                      <div className="flex items-center gap-1">
-                        <Users className="w-4 h-4 text-orange-500" />
-                        {day.walkIns}
-                      </div>
                     </td>
                     <td className="px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-100">
                       {day.total}
                     </td>
                     <td className="px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100">
-                      <div className="flex items-center gap-2">
-                        <span>{walkInPercentage.toFixed(1)}%</span>
-                        <div className="w-16 bg-zinc-200 dark:bg-zinc-700 rounded-full h-2">
-                          <div 
-                            className="bg-orange-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${Math.min(walkInPercentage, 100)}%` }}
-                          />
-                        </div>
-                      </div>
+                      -
                     </td>
                   </tr>
                 );

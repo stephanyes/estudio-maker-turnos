@@ -9,8 +9,7 @@ import {
   Client,
   Service,
   UserProfile,
-  StaffSchedule,
-  WalkIn
+  StaffSchedule
 } from '@/lib/supabase-db';
 import { getOccurrences } from '@/lib/schedule';
 import { useAuth } from './AuthContext';
@@ -28,16 +27,7 @@ interface AppointmentOccurrence {
   type: 'appointment';
 }
 
-interface WalkInOccurrence {
-  id: string;
-  walkInId: string;
-  startTime: string;
-  clientId: string;
-  serviceId: string;
-  type: 'walk-in';
-}
-
-type Occurrence = AppointmentOccurrence | WalkInOccurrence;
+type Occurrence = AppointmentOccurrence;
 
 // Tipos para el contexto
 interface DataContextType {
@@ -52,7 +42,6 @@ interface DataContextType {
   services: Service[];
   userProfiles: UserProfile[]; // 🚀 CENTRALIZADO: userProfiles en DataProvider
   staffSchedules: StaffSchedule[];
-  walkIns: WalkIn[];
   
   // Datos procesados
   todayOccurrences: Occurrence[];
@@ -63,7 +52,7 @@ interface DataContextType {
   loading: {
     core: boolean;        // appointments, clients, services
     staff: boolean;       // userProfiles, schedules
-    realtime: boolean;    // walkIns, today's occurrences
+    realtime: boolean;    // today's occurrences
     analytics: boolean;   // week/month occurrences
     any: boolean;         // any query loading
   };
@@ -78,7 +67,6 @@ interface DataContextType {
     services?: Error;
     userProfiles?: Error;
     staffSchedules?: Error;
-    walkIns?: Error;
     occurrences?: Error;
   };
   hasErrors: boolean;
@@ -124,7 +112,6 @@ export function useData() {
       queryClient.invalidateQueries({ queryKey: ['services', 'all'] });
       queryClient.invalidateQueries({ queryKey: ['userProfiles', 'all'] });
       queryClient.invalidateQueries({ queryKey: ['staffSchedules', 'all'] });
-      queryClient.invalidateQueries({ queryKey: ['walkIns', 'all'] });
       queryClient.invalidateQueries({ queryKey: ['occurrences', 'today'] });
       queryClient.invalidateQueries({ queryKey: ['occurrences', 'week'] });
       queryClient.invalidateQueries({ queryKey: ['occurrences', 'month'] });
@@ -295,34 +282,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
         ...optimizedQueryConfig,
   });
 
-  const walkInsQuery = useQuery({
-    queryKey: ['walkIns', 'all'],
-    queryFn: async () => {
-      // console.log('📊 DataProvider: Cargando walkIns...');
-      try {
-        const result = await db.walkIns.toArray();
-        // console.log('📊 DataProvider: WalkIns cargados:', result.length);
-        return result;
-      } catch (error) {
-        console.error('❌ DataProvider: Error cargando walkIns:', error);
-        throw error;
-      }
-    },
-    staleTime: 2 * 60 * 1000, // 2 minutos
-    gcTime: 10 * 60 * 1000, // 10 minutos
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    retry: 3,
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-    enabled: isAuthenticated, // 🎯 Solo ejecutar si está autenticado
-  });
 
   // 2. Versionado de datos para dependencias
   const dataVersion = useMemo(() => ({
     appointments: appointmentsQuery.dataUpdatedAt,
     schedules: staffSchedulesQuery.dataUpdatedAt,
-    walkIns: walkInsQuery.dataUpdatedAt,
-  }), [appointmentsQuery.dataUpdatedAt, staffSchedulesQuery.dataUpdatedAt, walkInsQuery.dataUpdatedAt]);
+  }), [appointmentsQuery.dataUpdatedAt, staffSchedulesQuery.dataUpdatedAt]);
   
   // 3. Ocurrencias procesadas con dependencias correctas y fechas dinámicas
   // Temporalmente deshabilitadas para debug
@@ -396,14 +361,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const loading = useMemo(() => ({
     core: appointmentsQuery.isLoading || clientsQuery.isLoading || servicesQuery.isLoading,
     staff: userProfilesQuery.isLoading || staffSchedulesQuery.isLoading, // 🚀 CENTRALIZADO: userProfilesQuery
-    realtime: walkInsQuery.isLoading || todayOccurrencesQuery.isLoading,
+    realtime: todayOccurrencesQuery.isLoading,
     analytics: weekOccurrencesQuery.isLoading || monthOccurrencesQuery.isLoading,
     any: appointmentsQuery.isLoading || clientsQuery.isLoading || servicesQuery.isLoading ||
-         userProfilesQuery.isLoading || staffSchedulesQuery.isLoading || walkInsQuery.isLoading ||
+         userProfilesQuery.isLoading || staffSchedulesQuery.isLoading ||
          todayOccurrencesQuery.isLoading || weekOccurrencesQuery.isLoading || monthOccurrencesQuery.isLoading
   }), [
     appointmentsQuery.isLoading, clientsQuery.isLoading, servicesQuery.isLoading,
-    userProfilesQuery.isLoading, staffSchedulesQuery.isLoading, walkInsQuery.isLoading,
+    userProfilesQuery.isLoading, staffSchedulesQuery.isLoading,
     todayOccurrencesQuery.isLoading, weekOccurrencesQuery.isLoading, monthOccurrencesQuery.isLoading
   ]);
 
@@ -417,11 +382,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
     services: servicesQuery.error || undefined,
     userProfiles: userProfilesQuery.error || undefined, // 🚀 CENTRALIZADO: userProfilesQuery
     staffSchedules: staffSchedulesQuery.error || undefined,
-    walkIns: walkInsQuery.error || undefined,
     occurrences: todayOccurrencesQuery.error || weekOccurrencesQuery.error || monthOccurrencesQuery.error || undefined,
   }), [
     appointmentsQuery.error, clientsQuery.error, servicesQuery.error,
-    userProfilesQuery.error, staffSchedulesQuery.error, walkInsQuery.error,
+    userProfilesQuery.error, staffSchedulesQuery.error,
     todayOccurrencesQuery.error, weekOccurrencesQuery.error, monthOccurrencesQuery.error
   ]);
 
@@ -454,7 +418,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (errors.services) servicesQuery.refetch();
     if (errors.userProfiles) userProfilesQuery.refetch(); // 🚀 CENTRALIZADO: userProfilesQuery
     if (errors.staffSchedules) staffSchedulesQuery.refetch();
-    if (errors.walkIns) walkInsQuery.refetch();
     if (errors.occurrences) {
       todayOccurrencesQuery.refetch();
       weekOccurrencesQuery.refetch();
@@ -462,7 +425,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   }, [
     errors, appointmentsQuery, clientsQuery, servicesQuery,
-    userProfilesQuery, staffSchedulesQuery, walkInsQuery,
+    userProfilesQuery, staffSchedulesQuery,
     todayOccurrencesQuery, weekOccurrencesQuery, monthOccurrencesQuery
   ]);
 
@@ -522,7 +485,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     services: servicesQuery.data ?? [],
     userProfiles: userProfilesQuery.data ?? [], // 🚀 CENTRALIZADO: userProfiles en DataProvider
     staffSchedules: staffSchedulesQuery.data ?? [],
-    walkIns: walkInsQuery.data ?? [],
     
     todayOccurrences: (todayOccurrencesQuery.data ?? []) as unknown as Occurrence[],
     weekOccurrences: (weekOccurrencesQuery.data ?? []) as unknown as Occurrence[],
@@ -615,7 +577,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     //     monthOccurrences: monthOccurrencesQuery.error,
     //   }
     // });
-  }, [errors, hasErrors, canRetry, appointmentsQuery.error, clientsQuery.error, servicesQuery.error, staffSchedulesQuery.error, walkInsQuery.error, todayOccurrencesQuery.error, weekOccurrencesQuery.error, monthOccurrencesQuery.error]);
+  }, [errors, hasErrors, canRetry, appointmentsQuery.error, clientsQuery.error, servicesQuery.error, staffSchedulesQuery.error, todayOccurrencesQuery.error, weekOccurrencesQuery.error, monthOccurrencesQuery.error]);
 
   // useEffect para monitorear el estado general
   useEffect(() => {

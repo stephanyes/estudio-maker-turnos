@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { DateTime } from 'luxon';
 import { useDailyRevenue } from '@/lib/queries';
 import { useData } from '@/app/context/DataProvider';
-import { Appointment, WalkIn } from '@/lib/supabase-db';
+import { Appointment } from '@/lib/supabase-db';
 import ServiceTimerControl from './ServiceTimerControl';
 import { Timer, Calendar, User, Clock, Play, DollarSign, CheckCircle } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
@@ -19,16 +19,11 @@ export default function ActiveServicesView() {
     // Citas del día que están done pero no completadas
     ...(dailyData?.appointments || []).filter((apt: Appointment) => 
       apt.status === 'done' && !apt.completedAt
-    ).map(apt => ({ ...apt, type: 'appointment' })),
-    
-    // Walk-ins del día que no están completados
-    ...(dailyData?.walkIns || []).filter((wi: WalkIn) => 
-      !wi.completedAt
-    ).map(wi => ({ ...wi, type: 'walkIn' }))
+    ).map(apt => ({ ...apt, type: 'appointment' }))
   ].sort((a, b) => {
-    // Ordenar por hora de inicio programada o timestamp
-    const timeA = a.type === 'appointment' ? (a as Appointment).startDateTime : (a as WalkIn).timestamp;
-    const timeB = b.type === 'appointment' ? (b as Appointment).startDateTime : (b as WalkIn).timestamp;
+    // Ordenar por hora de inicio programada
+    const timeA = (a as Appointment).startDateTime;
+    const timeB = (b as Appointment).startDateTime;
     return timeA.localeCompare(timeB);
   });
 
@@ -122,7 +117,7 @@ export default function ActiveServicesView() {
           ) : (
             activeServices.map((service) => {
               const isAppointment = service.type === 'appointment';
-              const serviceData = service as (Appointment & { type: string }) | (WalkIn & { type: string });
+              const serviceData = service as (Appointment & { type: string });
               const status = getServiceStatus(service);
               
               return (
@@ -150,17 +145,14 @@ export default function ActiveServicesView() {
                           <div className="flex items-center gap-2">
                             <Clock className="w-4 h-4 text-zinc-400" />
                             <span className="text-zinc-600 dark:text-zinc-300">
-                              {isAppointment 
-                                ? `${formatTime((serviceData as Appointment).startDateTime)} (${(serviceData as Appointment).durationMin}min)`
-                                : formatTime((serviceData as WalkIn).timestamp)
-                              }
+                              {`${formatTime((serviceData as Appointment).startDateTime)} (${(serviceData as Appointment).durationMin}min)`}
                             </span>
                           </div>
                           
                           <div className="flex items-center gap-2">
                             <User className="w-4 h-4 text-zinc-400" />
                             <span className="text-zinc-600 dark:text-zinc-300">
-                              {getEmployeeName(isAppointment ? (serviceData as Appointment).assignedTo : (serviceData as WalkIn).servedBy)}
+                              {getEmployeeName((serviceData as Appointment).assignedTo)}
                             </span>
                           </div>
 
@@ -176,10 +168,7 @@ export default function ActiveServicesView() {
 
                         <div className="text-sm">
                           <p className="text-zinc-900 dark:text-zinc-100 font-medium">
-                            {isAppointment 
-                              ? ((serviceData as Appointment).title || 'Cita sin título')
-                              : ((serviceData as WalkIn).serviceName || 'Walk-in')
-                            }
+                            {(serviceData as Appointment).title || 'Cita sin título'}
                           </p>
                           {serviceData.notes && (
                             <p className="text-zinc-500 dark:text-zinc-400 mt-1">
@@ -222,11 +211,11 @@ export default function ActiveServicesView() {
 
                     {/* Control de timer */}
                     <div className="flex-shrink-0">
-                      <ServiceTimerControl
-                        service={serviceData}
-                        type={isAppointment ? 'appointment' : 'walkIn'}
-                        onUpdate={refetch}
-                      />
+                                              <ServiceTimerControl
+                          service={serviceData}
+                          type='appointment'
+                          onUpdate={refetch}
+                        />
                     </div>
                   </div>
                 </div>

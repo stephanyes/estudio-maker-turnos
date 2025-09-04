@@ -11,7 +11,6 @@ export async function addSeedData() {
     const clientIds = await seedClients();
     const appointmentIds = await seedAppointments(serviceIds, clientIds);
     await seedExceptions(appointmentIds);
-    await seedWalkIns(serviceIds, clientIds);
     await seedClientHistory();
 
     // console.log('✅ Datos de prueba agregados exitosamente');
@@ -30,13 +29,11 @@ export async function seedDatabase() {
     await db.services.clear();
     await db.clients.clear();
     await db.clientHistory.clear();
-    await db.walkIns.clear();
 
     const serviceIds = await seedServices();
     const clientIds = await seedClients();
     const appointmentIds = await seedAppointments(serviceIds, clientIds);
     await seedExceptions(appointmentIds);
-    await seedWalkIns(serviceIds, clientIds);
     await seedClientHistory();
 
     console.log('✅ Datos de prueba sembrados exitosamente');
@@ -356,48 +353,6 @@ async function seedAppointments(serviceIds: IdMap, clientIds: IdMap): Promise<Id
   return keysToIds;
 }
 
-async function seedWalkIns(serviceIds: IdMap, clientIds: IdMap): Promise<void> {
-  const now = DateTime.now().setZone('America/Argentina/Buenos_Aires');
-  
-  const walkIns = [
-    {
-      date: now.minus({ days: 1 }).toISODate()!,
-      serviceId: serviceIds['service-1'],
-      serviceName: 'Corte Básico',
-      clientId: clientIds['client-3'],
-      paymentMethod: 'cash' as const,
-      finalPrice: 7200,
-      listPrice: 8000,
-      discount: 10,
-      timestamp: now.minus({ days: 1 }).set({ hour: 14, minute: 30 }).toISO()!,
-      notes: 'Walk-in sin cita previa',
-      duration: 30,
-      // Agregar timing completado
-      startedAt: now.minus({ days: 1 }).set({ hour: 14, minute: 35 }).toISO()!,
-      completedAt: now.minus({ days: 1 }).set({ hour: 15, minute: 8 }).toISO()!, // 33 minutos reales
-    },
-    {
-      date: now.toISODate()!,
-      serviceId: serviceIds['service-4'],
-      serviceName: 'Solo Barba',
-      paymentMethod: 'card' as const,
-      finalPrice: 6000,
-      listPrice: 6000,
-      discount: 0,
-      timestamp: now.set({ hour: 13, minute: 0 }).toISO()!,
-      notes: 'Cliente nuevo, walk-in',
-      duration: 25,
-      // Sin timing para que aparezca en ActiveServices
-    }
-  ];
-
-  for (const wi of walkIns) {
-    await db.walkIns.add(wi);
-  }
-  
-  console.log(`🚶‍♂️ ${walkIns.length} walk-ins agregados`);
-}
-
 async function seedExceptions(appointmentIds: IdMap) {
   const now = DateTime.now().setZone('America/Argentina/Buenos_Aires');
 
@@ -468,12 +423,11 @@ async function seedClientHistory(): Promise<void> {
 }
 
 export async function verifySeedData() {
-  const [clients, services, appointments, exceptions, walkIns] = await Promise.all([
+  const [clients, services, appointments, exceptions] = await Promise.all([
     db.clients.count(),
     db.services.count(),
     db.appointments.count(),
     db.exceptions.count(),
-    db.walkIns.count(),
   ]);
 
   console.log('📊 Resumen de datos:');
@@ -481,9 +435,7 @@ export async function verifySeedData() {
   console.log(`   Servicios: ${services}`);
   console.log(`   Citas: ${appointments}`);
   console.log(`   Excepciones: ${exceptions}`);
-  console.log(`   Walk-ins: ${walkIns}`);
-
-  return { clients, services, appointments, exceptions, walkIns };
+  return { clients, services, appointments, exceptions };
 }
 
 export async function getQuickStats() {

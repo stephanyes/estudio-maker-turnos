@@ -1,13 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { DateTime } from 'luxon';
-import { useUpdateAppointmentWithTiming, useUpdateWalkIn } from '@/lib/queries';
-import { Appointment, WalkIn, calculateActualDuration } from '@/lib/supabase-db';
+import { useUpdateAppointmentWithTiming } from '@/lib/queries';
+import { Appointment, calculateActualDuration } from '@/lib/supabase-db';
 import { Play, Pause, Square, Clock, CheckCircle, Ban } from 'lucide-react';
 
 type ServiceTimerProps = {
-  service: Appointment | WalkIn;
-  type: 'appointment' | 'walkIn';
+  service: Appointment;
+  type: 'appointment';
   onUpdate?: () => void;
 };
 
@@ -21,30 +21,18 @@ export default function ServiceTimerControl({ service, type, onUpdate }: Service
   const [autoClosing, setAutoClosing] = useState(false);
 
   const updateAppointmentMutation = useUpdateAppointmentWithTiming();
-  const updateWalkInMutation = useUpdateWalkIn();
 
   // Estado actual
-  const hasStarted = type === 'appointment' 
-    ? (service as Appointment).startedAt 
-    : (service as WalkIn).startedAt;
-    
-  const hasCompleted = type === 'appointment' 
-    ? (service as Appointment).completedAt 
-    : (service as WalkIn).completedAt;
+  const hasStarted = (service as Appointment).startedAt;
+  const hasCompleted = (service as Appointment).completedAt;
 
   const actualDuration = hasStarted && hasCompleted 
     ? calculateActualDuration(hasStarted, hasCompleted)
     : null;
 
   // Ventanas de programación
-  const scheduledStartISO = type === 'appointment'
-    ? (service as Appointment).startDateTime
-    : (service as WalkIn).timestamp;
-
-  const estimatedDuration =
-    type === 'appointment'
-      ? (service as Appointment).durationMin
-      : (service as WalkIn).duration || 30;
+  const scheduledStartISO = (service as Appointment).startDateTime;
+  const estimatedDuration = (service as Appointment).durationMin;
 
   const scheduledStart = DateTime.fromISO(scheduledStartISO);
   const scheduledEnd   = scheduledStart.plus({ minutes: estimatedDuration });
@@ -108,20 +96,13 @@ export default function ServiceTimerControl({ service, type, onUpdate }: Service
     setElapsedTime(0);
 
     try {
-      if (type === 'appointment') {
-        // Importante: NO marcamos done al iniciar; solo seteamos startedAt.
-        await updateAppointmentMutation.mutateAsync({
-          appointment: {
-            ...(service as Appointment),
-            startedAt: now,
-          }
-        });
-      } else {
-        await updateWalkInMutation.mutateAsync({
-          id: (service as WalkIn).id,
-          changes: { startedAt: now }
-        });
-      }
+      // Importante: NO marcamos done al iniciar; solo seteamos startedAt.
+      await updateAppointmentMutation.mutateAsync({
+        appointment: {
+          ...(service as Appointment),
+          startedAt: now,
+        }
+      });
       onUpdate?.();
     } catch (error) {
       console.error('Error starting timer:', error);
@@ -146,25 +127,15 @@ export default function ServiceTimerControl({ service, type, onUpdate }: Service
     setIsRunning(false);
 
     try {
-      if (type === 'appointment') {
-        await updateAppointmentMutation.mutateAsync({
-          appointment: {
-            ...(service as Appointment),
-            startedAt: actualStartISO,
-            completedAt: nowISO,
-            actualDurationMin: duration,
-            status: 'done'
-          }
-        });
-      } else {
-        await updateWalkInMutation.mutateAsync({
-          id: (service as WalkIn).id,
-          changes: {
-            startedAt: actualStartISO,
-            completedAt: nowISO
-          }
-        });
-      }
+      await updateAppointmentMutation.mutateAsync({
+        appointment: {
+          ...(service as Appointment),
+          startedAt: actualStartISO,
+          completedAt: nowISO,
+          actualDurationMin: duration,
+          status: 'done'
+        }
+      });
       onUpdate?.();
     } catch (error) {
       console.error('Error completing service:', error);
@@ -202,7 +173,7 @@ export default function ServiceTimerControl({ service, type, onUpdate }: Service
   // Reglas de habilitación de controles
   const showPlay = !hasStarted && !hasCompleted && !isCancelled;
   const disablePlay = !canStartWindow || isExpiredBeyondGrace;
-  const disableComplete = updateAppointmentMutation.isPending || updateWalkInMutation.isPending;
+  const disableComplete = updateAppointmentMutation.isPending;
   const disableRunningControls = disableComplete || isCancelled;
 
   return (
@@ -221,7 +192,7 @@ export default function ServiceTimerControl({ service, type, onUpdate }: Service
         {showPlay && (
           <button
             onClick={handleStart}
-            disabled={disablePlay || updateAppointmentMutation.isPending || updateWalkInMutation.isPending}
+            disabled={disablePlay || updateAppointmentMutation.isPending}
             className="p-1 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/20 rounded disabled:opacity-50"
             title={disablePlay ? 'Fuera de horario' : 'Iniciar servicio'}
           >

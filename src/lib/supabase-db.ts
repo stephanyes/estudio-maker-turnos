@@ -1044,25 +1044,13 @@ export async function getDailyTraffic(date: string) {
 
   if (appointmentsError) throw appointmentsError;
 
-  // Walk-ins del día
-  const { data: walkInsData, error: walkInsError } = await supabase
-    .from('walk_ins')
-    .select('*')
-    .eq('business_id', businessId)
-    .eq('date', date);
-
-  if (walkInsError) throw walkInsError;
-
   const appointments = appointmentsData.map(toAppointment);
-  const walkIns = walkInsData.map(toWalkIn);
 
   return {
     date,
     appointments: appointments.length,
-    walkIns: walkIns.length,
-    total: appointments.length + walkIns.length,
-    appointmentData: appointments,
-    walkInData: walkIns
+    total: appointments.length,
+    appointmentData: appointments
   };
 }
 
@@ -1081,17 +1069,7 @@ export async function getDailyRevenue(date: string) {
 
   if (appointmentsError) throw appointmentsError;
 
-  // Walk-ins del día
-  const { data: walkInsData, error: walkInsError } = await supabase
-    .from('walk_ins')
-    .select('*')
-    .eq('business_id', businessId)
-    .eq('date', date);
-
-  if (walkInsError) throw walkInsError;
-
   const appointments = appointmentsData.map(toAppointment);
-  const walkIns = walkInsData.map(toWalkIn);
 
   // Calcular totales
   let totalRevenue = 0;
@@ -1120,16 +1098,6 @@ export async function getDailyRevenue(date: string) {
     // 🎯 Las citas con paymentStatus = 'cancelled' NO se suman a ningún total
   });
 
-  // Revenue de walk-ins (siempre considerados pagados)
-  walkIns.forEach(walkIn => {
-    totalRevenue += walkIn.finalPrice;
-    
-    switch (walkIn.paymentMethod) {
-      case 'cash': cashRevenue += walkIn.finalPrice; break;
-      case 'card': cardRevenue += walkIn.finalPrice; break;
-      case 'transfer': transferRevenue += walkIn.finalPrice; break;
-    }
-  });
 
   return {
     date,
@@ -1138,12 +1106,11 @@ export async function getDailyRevenue(date: string) {
     cardRevenue,
     transferRevenue,
     pendingRevenue,
-    totalServices: appointments.filter(a => a.paymentStatus !== 'cancelled').length + walkIns.length,
-    paidServices: appointments.filter(a => a.paymentStatus === 'paid').length + walkIns.length,
+    totalServices: appointments.filter(a => a.paymentStatus !== 'cancelled').length,
+    paidServices: appointments.filter(a => a.paymentStatus === 'paid').length,
     pendingServices: appointments.filter(a => a.paymentStatus === 'pending').length,
     cancelledServices: appointments.filter(a => a.paymentStatus === 'cancelled').length, // 🎯 Nuevo contador
-    appointments,
-    walkIns
+    appointments
   };
 }
 
@@ -1436,7 +1403,6 @@ export const db = {
   exceptions,
   clientHistory,
   clientNotes, // 🆕 Agregar clientNotes
-  walkIns, // ya actualizado con los nuevos campos
   userProfiles, // 🆕
   staffSchedules, // 🆕
 };

@@ -16,11 +16,29 @@ import {
   X,
   UserCheck,
   UserX,
-  RotateCcw
+  RotateCcw,
+  Download,
+  Upload
 } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 
-export default function AdminDashboard() {
+interface AdminDashboardProps {
+  onExport?: () => void;
+  onImport?: () => void;
+  onReset?: () => void;
+  canExportData?: boolean;
+  canImportData?: boolean;
+  canResetData?: boolean;
+}
+
+export default function AdminDashboard({ 
+  onExport, 
+  onImport, 
+  onReset, 
+  canExportData = false, 
+  canImportData = false, 
+  canResetData = false 
+}: AdminDashboardProps) {
   const { createUserByAdmin, updateUserRole, deleteUser, getAllUsers, reactivateUser, user } = useAuth();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -183,14 +201,61 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <button
-          onClick={() => setShowCreateForm(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 text-white rounded-lg hover:from-purple-500 hover:to-cyan-500 transition-all duration-300 font-medium tracking-wide shadow-sm"
-        >
-          <UserPlus className="w-5 h-5" />
-          <span className="hidden sm:inline">CREAR USUARIO</span>
-          <span className="sm:hidden">CREAR</span>
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Botones de herramientas de datos */}
+          <div className="flex gap-2">
+            {/* Exportar - Solo Admin */}
+            {canExportData && onExport && (
+              <button
+                onClick={onExport}
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm
+                          border border-green-300 text-green-700 bg-green-50/80
+                          hover:bg-green-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+                title="Exportar datos a JSON"
+              >
+                <Download size={16} />
+                <span className="hidden sm:inline">Exportar</span>
+              </button>
+            )}
+
+            {/* Importar - Solo Admin */}
+            {canImportData && onImport && (
+              <label
+                htmlFor="import-json-admin"
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm cursor-pointer
+                          border border-blue-300 text-blue-700 bg-blue-50/80
+                          hover:bg-blue-100 focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500"
+                title="Importar datos desde JSON"
+              >
+                <Upload size={16} />
+                <span className="hidden sm:inline">Importar</span>
+              </label>
+            )}
+
+            {/* Reiniciar - Solo Admin */}
+            {canResetData && onReset && (
+              <button
+                onClick={onReset}
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm
+                          border border-red-300 text-red-700 bg-red-50/80
+                          hover:bg-red-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+                title="Borrar base de datos local"
+              >
+                <Trash2 size={16} />
+                <span className="hidden sm:inline">Reiniciar</span>
+              </button>
+            )}
+          </div>
+
+          <button
+            onClick={() => setShowCreateForm(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 text-white rounded-lg hover:from-purple-500 hover:to-cyan-500 transition-all duration-300 font-medium tracking-wide shadow-sm"
+          >
+            <UserPlus className="w-5 h-5" />
+            <span className="hidden sm:inline">CREAR USUARIO</span>
+            <span className="sm:hidden">CREAR</span>
+          </button>
+        </div>
       </div>
 
       {/* Mensajes de estado */}
@@ -393,6 +458,19 @@ export default function AdminDashboard() {
           onClose={closeEditForm}
         />
       )}
+
+      {/* Input file oculto para importación */}
+      <input
+        type="file"
+        id="import-json-admin"
+        accept=".json"
+        style={{ display: 'none' }}
+        onChange={(e) => {
+          // Aquí se manejaría la importación si fuera necesario
+          // Por ahora solo cerramos el input
+          e.target.value = '';
+        }}
+      />
     </div>
   );
 }
