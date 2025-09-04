@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
+import { useState } from 'react';
 
 interface LoadingSpinnerProps {
   message?: string;
@@ -15,6 +16,7 @@ export default function LoadingSpinner({
   className = ''
 }: LoadingSpinnerProps) {
   const { theme } = useTheme();
+  const [imageError, setImageError] = useState(false);
   
   // Determinar qué imagen usar basado en variant y tema
   const getImageSrc = () => {
@@ -55,16 +57,26 @@ export default function LoadingSpinner({
         {/* Efecto de brillo sutil */}
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-t-3xl"></div>
         
-        {/* Logo estático */}
-                  <div className="relative mb-6">
-            <div className={currentSize.image}>
-            <Image
-              src={getImageSrc()}
-              alt="Estudio Maker"
-              width={size === 'small' ? 160 : size === 'medium' ? 224 : 256}
-              height={size === 'small' ? 160 : size === 'medium' ? 224 : 256}
-              className="w-full h-full object-contain"
-            />
+        {/* Logo estático con fallback */}
+        <div className="relative mb-6">
+          <div className={currentSize.image}>
+            {!imageError ? (
+              <Image
+                src={getImageSrc()}
+                alt="Estudio Maker"
+                width={size === 'small' ? 160 : size === 'medium' ? 224 : 256}
+                height={size === 'small' ? 160 : size === 'medium' ? 224 : 256}
+                className="w-full h-full object-contain"
+                onError={() => setImageError(true)}
+                onLoad={() => setImageError(false)}
+                priority
+                unoptimized
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
+                <div className="text-4xl font-bold text-white">EM</div>
+              </div>
+            )}
           </div>
         </div>
         

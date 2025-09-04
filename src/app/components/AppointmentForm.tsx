@@ -62,8 +62,12 @@ export default function AppointmentForm({
   const [assignedTo, setAssignedTo] = useState<string | undefined>(undefined);
 
   // React Query hooks
-  const { services, userProfiles, loading, hasErrors } = useData();
+  const { services, loading, hasErrors } = useData();
   const { user } = useAuth();
+  const { userProfiles } = useData();
+  
+  // Obtener el perfil del usuario actual
+  const userProfile = userProfiles?.find(profile => profile.id === user?.id);
   const { invalidateStats } = useDataInvalidation();
   const servicesLoading = loading.core;
   const profilesLoading = loading.staff;
@@ -99,7 +103,8 @@ export default function AppointmentForm({
 
   // 🎯 Optimización: Memoizar cálculos costosos
   const memoizedServices = useMemo(() => services || [], [services]);
-  const memoizedUserProfiles = useMemo(() => userProfiles || [], [userProfiles]);
+  // 🚀 ELIMINADO: memoizedUserProfiles - usar userProfile del AuthContext
+  // const memoizedUserProfiles = useMemo(() => userProfiles || [], [userProfiles]);
   
   // 🎯 Optimización: Memoizar validaciones
   const isFormValid = useMemo(() => {
@@ -530,11 +535,12 @@ export default function AppointmentForm({
                 disabled={isFormDisabled}
               >
                 <option value="">Sin asignar</option>
-                {userProfiles?.map((profile: any) => (
-                  <option key={profile.id} value={profile.id}>
-                    {profile.name} ({profile.role})
+                {/* 🚀 SIMPLIFICADO: Solo mostrar el usuario actual */}
+                {userProfile && (
+                  <option key={userProfile.id} value={userProfile.id}>
+                    {userProfile.name} ({userProfile.role})
                   </option>
-                ))}
+                )}
               </select>
             )}
           </label>

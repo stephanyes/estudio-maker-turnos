@@ -23,6 +23,7 @@ import AdminDashboard from './components/AdminDashboard';
 import CompetitorsView from './components/CompetitorsView';
 import { ProtectedRoute } from './components/Auth/LoginForm';
 import { usePermissions, useAuth } from './context/AuthContext';
+import { useData } from './context/DataProvider';
 import Logo from './components/Logo';
 
 import { 
@@ -53,7 +54,11 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const permissions = usePermissions();
-  const { signOut, user, userProfile } = useAuth();
+  const { signOut, user } = useAuth();
+  const { userProfiles } = useData();
+  
+  // Obtener el perfil del usuario actual
+  const userProfile = userProfiles?.find(profile => profile.id === user?.id);
   const isMobile = useIsMobile();
   
         // Debug removido para optimización

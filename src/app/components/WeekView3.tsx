@@ -35,13 +35,11 @@ export default function WeekView3({ onChanged }: Props) {
   const [expandedDay, setExpandedDay] = useState<DateTime | null>(null);
   
   // 🎯 DataProvider para obtener todos los datos
-  const { 
-    appointments, 
-    userProfiles, 
+  const { appointments, 
     loading,
     errors,
     hasErrors
-  } = useData();
+   } = useData();
   const { invalidateAppointments } = useDataInvalidation();
 
   // Navegación de meses

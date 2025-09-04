@@ -12,7 +12,11 @@ export default function PricesView() {
 
   // 🎯 DataProvider para obtener todos los datos
   const { services, loading, hasErrors, errors, retry, canRetry } = useData();
-  const { user, userProfile } = useAuth();
+  const { user } = useAuth();
+  const { userProfiles } = useData();
+  
+  // Obtener el perfil del usuario actual
+  const userProfile = userProfiles?.find(profile => profile.id === user?.id);
   const createServiceMutation = useCreateService();
   const updateServiceMutation = useUpdateService();
   const deleteServiceMutation = useDeleteService();

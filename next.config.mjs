@@ -5,6 +5,14 @@ import withPWAInit from 'next-pwa';
 const nextConfig = {
   reactStrictMode: true,
   experimental: { optimizePackageImports: ['luxon'] },
+  images: {
+    // Configuración para imágenes estáticas
+    unoptimized: true,
+    // Permitir dominios externos si es necesario
+    domains: [],
+    // Configuración de formatos
+    formats: ['image/webp', 'image/avif'],
+  },
 };
 
 const isProd = process.env.NODE_ENV === 'production';

@@ -50,7 +50,7 @@ interface DataContextType {
   };
   clients: Client[];
   services: Service[];
-  userProfiles: UserProfile[];
+  userProfiles: UserProfile[]; // 🚀 CENTRALIZADO: userProfiles en DataProvider
   staffSchedules: StaffSchedule[];
   walkIns: WalkIn[];
   
@@ -88,7 +88,7 @@ interface DataContextType {
   // Funciones de utilidad
   getClientById: (id: string) => Client | undefined;
   getServiceById: (id: string) => Service | undefined;
-  getUserProfileById: (id: string) => UserProfile | undefined;
+  getUserProfileById: (id: string) => UserProfile | undefined; // 🚀 CENTRALIZADO: userProfilesQuery
   
   // Funciones de carga selectiva
   loadAppointmentsByDateRange: (start: string, end: string) => Promise<Appointment[]>;
@@ -185,18 +185,32 @@ const useDateRanges = () => useMemo(() => {
 // Provider principal
 export function DataProvider({ children }: { children: ReactNode }) {
   const dateRanges = useDateRanges();
-  const { user, userProfile, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   
-  // 🎯 CONDICIÓN CRÍTICA: Solo hacer queries si el usuario está autenticado y el perfil está cargado
-  const isAuthenticated = !!user && !authLoading && !!userProfile;
+  // 🎯 CONDICIÓN CRÍTICA: Solo hacer queries si el usuario está autenticado
+  const isAuthenticated = !!user && !authLoading;
   
   // console.log('📊 DataProvider: Estado de autenticación:', {
   //   hasUser: !!user,
   //   authLoading,
-  //   hasProfile: !!userProfile,
   //   isAuthenticated
   // });
   
+  // 🎯 CONFIGURACIÓN OPTIMIZADA PARA REDUCIR REQUESTS
+  const optimizedQueryConfig = {
+    staleTime: 60 * 60 * 1000, // 🚀 1 HORA - Evitar requests duplicadas
+    gcTime: 2 * 60 * 60 * 1000, // 🚀 2 HORAS - Cache más agresivo
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    retry: 1,
+    retryDelay: 1000,
+    enabled: isAuthenticated,
+    // 🚀 NUEVO: Evitar requests duplicadas
+    refetchInterval: false as const,
+    refetchIntervalInBackground: false,
+  };
+
   // 🎯 QUERIES PRINCIPALES con paginación y mejores configuraciones
   
   // 1. Datos básicos de la base de datos - usar simple query por ahora
@@ -213,13 +227,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         throw error;
       }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutos
-    gcTime: 15 * 60 * 1000, // 15 minutos
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    retry: 3,
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-    enabled: isAuthenticated, // 🎯 Solo ejecutar si está autenticado
+    ...optimizedQueryConfig,
   });
 
   const clientsQuery = useQuery({
@@ -235,13 +243,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         throw error;
       }
     },
-    staleTime: 10 * 60 * 1000, // 10 minutos
-    gcTime: 30 * 60 * 1000, // 30 minutos
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    retry: 3,
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-    enabled: isAuthenticated, // 🎯 Solo ejecutar si está autenticado
+        ...optimizedQueryConfig,
   });
 
   const servicesQuery = useQuery({
@@ -257,15 +259,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         throw error;
       }
     },
-    staleTime: 15 * 60 * 1000, // 15 minutos
-    gcTime: 60 * 60 * 1000, // 1 hora
-    enabled: isAuthenticated, // 🎯 Solo ejecutar si está autenticado
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    retry: 3,
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+        ...optimizedQueryConfig,
   });
 
+  // 🚀 CENTRALIZADO: userProfilesQuery en DataProvider
   const userProfilesQuery = useQuery({
     queryKey: ['userProfiles', 'all'],
     queryFn: async () => {
@@ -279,13 +276,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         throw error;
       }
     },
-    staleTime: 10 * 60 * 1000, // 10 minutos
-    gcTime: 30 * 60 * 1000, // 30 minutos
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    retry: 3,
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-    enabled: isAuthenticated, // 🎯 Solo ejecutar si está autenticado
+    ...optimizedQueryConfig,
   });
 
   const staffSchedulesQuery = useQuery({
@@ -301,13 +292,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         throw error;
       }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutos
-    gcTime: 15 * 60 * 1000, // 15 minutos
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    retry: 3,
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-    enabled: isAuthenticated, // 🎯 Solo ejecutar si está autenticado
+        ...optimizedQueryConfig,
   });
 
   const walkInsQuery = useQuery({
@@ -410,7 +395,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // 🚀 ESTADOS DE CARGA GRANULARES
   const loading = useMemo(() => ({
     core: appointmentsQuery.isLoading || clientsQuery.isLoading || servicesQuery.isLoading,
-    staff: userProfilesQuery.isLoading || staffSchedulesQuery.isLoading,
+    staff: userProfilesQuery.isLoading || staffSchedulesQuery.isLoading, // 🚀 CENTRALIZADO: userProfilesQuery
     realtime: walkInsQuery.isLoading || todayOccurrencesQuery.isLoading,
     analytics: weekOccurrencesQuery.isLoading || monthOccurrencesQuery.isLoading,
     any: appointmentsQuery.isLoading || clientsQuery.isLoading || servicesQuery.isLoading ||
@@ -430,7 +415,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     appointments: appointmentsQuery.error || undefined,
     clients: clientsQuery.error || undefined,
     services: servicesQuery.error || undefined,
-    userProfiles: userProfilesQuery.error || undefined,
+    userProfiles: userProfilesQuery.error || undefined, // 🚀 CENTRALIZADO: userProfilesQuery
     staffSchedules: staffSchedulesQuery.error || undefined,
     walkIns: walkInsQuery.error || undefined,
     occurrences: todayOccurrencesQuery.error || weekOccurrencesQuery.error || monthOccurrencesQuery.error || undefined,
@@ -467,7 +452,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (errors.appointments) appointmentsQuery.refetch();
     if (errors.clients) clientsQuery.refetch();
     if (errors.services) servicesQuery.refetch();
-    if (errors.userProfiles) userProfilesQuery.refetch();
+    if (errors.userProfiles) userProfilesQuery.refetch(); // 🚀 CENTRALIZADO: userProfilesQuery
     if (errors.staffSchedules) staffSchedulesQuery.refetch();
     if (errors.walkIns) walkInsQuery.refetch();
     if (errors.occurrences) {
@@ -496,7 +481,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     servicesQuery.data?.find(service => service.id === id), [servicesQuery.data]);
 
   const getUserProfileById = useCallback((id: string) => 
-    userProfilesQuery.data?.find(profile => profile.id === id), [userProfilesQuery.data]);
+    userProfilesQuery.data?.find(profile => profile.id === id), [userProfilesQuery.data]); // 🚀 CENTRALIZADO: userProfilesQuery
 
   // 📥 FUNCIONES DE CARGA SELECTIVA
   const loadAppointmentsByDateRange = useCallback(
@@ -535,7 +520,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     appointments: appointmentsData,
     clients: clientsQuery.data ?? [],
     services: servicesQuery.data ?? [],
-    userProfiles: userProfilesQuery.data ?? [],
+    userProfiles: userProfilesQuery.data ?? [], // 🚀 CENTRALIZADO: userProfiles en DataProvider
     staffSchedules: staffSchedulesQuery.data ?? [],
     walkIns: walkInsQuery.data ?? [],
     
@@ -553,7 +538,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     
     getClientById,
     getServiceById,
-    getUserProfileById,
+    getUserProfileById, // 🚀 CENTRALIZADO: userProfilesQuery
     
     loadAppointmentsByDateRange,
     searchClients,
@@ -630,7 +615,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     //     monthOccurrences: monthOccurrencesQuery.error,
     //   }
     // });
-  }, [errors, hasErrors, canRetry, appointmentsQuery.error, clientsQuery.error, servicesQuery.error, userProfilesQuery.error, staffSchedulesQuery.error, walkInsQuery.error, todayOccurrencesQuery.error, weekOccurrencesQuery.error, monthOccurrencesQuery.error]);
+  }, [errors, hasErrors, canRetry, appointmentsQuery.error, clientsQuery.error, servicesQuery.error, staffSchedulesQuery.error, walkInsQuery.error, todayOccurrencesQuery.error, weekOccurrencesQuery.error, monthOccurrencesQuery.error]);
 
   // useEffect para monitorear el estado general
   useEffect(() => {

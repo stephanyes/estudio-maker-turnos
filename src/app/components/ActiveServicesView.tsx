@@ -1,7 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { DateTime } from 'luxon';
-import { useDailyRevenue, useUserProfiles } from '@/lib/queries';
+import { useDailyRevenue } from '@/lib/queries';
+import { useData } from '@/app/context/DataProvider';
 import { Appointment, WalkIn } from '@/lib/supabase-db';
 import ServiceTimerControl from './ServiceTimerControl';
 import { Timer, Calendar, User, Clock, Play, DollarSign, CheckCircle } from 'lucide-react';
@@ -11,7 +12,7 @@ export default function ActiveServicesView() {
   const [selectedDate, setSelectedDate] = useState(DateTime.now().toFormat('yyyy-LL-dd'));
   
   const { data: dailyData, isLoading, error, refetch } = useDailyRevenue(selectedDate);
-  const { data: userProfiles = [] } = useUserProfiles();
+  const { userProfiles = [] } = useData();
 
   // Filtrar servicios que necesitan control de tiempo
   const activeServices = [
@@ -33,7 +34,7 @@ export default function ActiveServicesView() {
 
   const getEmployeeName = (employeeId?: string) => {
     if (!employeeId) return 'Sin asignar';
-    const employee = userProfiles.find(u => u.id === employeeId);
+    const employee = userProfiles?.find(u => u.id === employeeId);
     return employee?.name || 'Empleado desconocido';
   };
 

@@ -7,6 +7,7 @@ import { DataProvider } from './context/DataProvider';
 import { DataLoadingProvider } from './components/DataLoadingProvider';
 import DataProviderDebug from './components/DataProviderDebug';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import NetworkMonitor from './components/NetworkMonitor';
 // import InstallPWAButton from './components/InstallPWAButton';
 
 
@@ -70,10 +71,11 @@ export default function RootLayout({
                 </DataLoadingProvider>
               </DataProvider>
             </QueryProvider>
-          </AuthProvider>
-        </ErrorBoundary>
-        {/* <InstallPWAButton /> */}
-      </body>
+                      </AuthProvider>
+          </ErrorBoundary>
+    {/* <InstallPWAButton /> */}
+    <NetworkMonitor />
+          </body>
     </html>
   );
 }

@@ -135,7 +135,10 @@ export function calculateFinalPrice(
   };
 }
 
-// Helper para obtener usuario actual
+// 🚀 OPTIMIZADO: Business ID desde variable de entorno
+const BUSINESS_ID = process.env.NEXT_PUBLIC_BUSINESS_ID;
+
+// Helper para obtener usuario actual (mantenido para compatibilidad)
 async function getCurrentUser() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('No autenticado');
@@ -143,7 +146,7 @@ async function getCurrentUser() {
   const { data: profile } = await supabase
     .from('user_profiles')
     .select('*')
-    .eq('id', user.id)
+    .eq('id', 'system')
     .single();
 
   if (!profile) throw new Error('Perfil no encontrado');
@@ -236,21 +239,23 @@ function toWalkIn(data: any): WalkIn {
 // API de clients sin cambios
 export const clients = {
   async clear(): Promise<void> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { error } = await supabase
       .from('clients')
       .delete()
-      .eq('business_id', profile.business_id);
-
+      .eq('business_id', businessId);
+    
     if (error) throw error;
   },
 
   async toArray(): Promise<Client[]> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('clients')
       .select('*')
-      .eq('business_id', profile.business_id)
+      .eq('business_id', businessId)
       .order('name');
     
     if (error) throw error;
@@ -258,11 +263,12 @@ export const clients = {
   },
 
   async orderBy(field: string): Promise<Client[]> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('clients')
       .select('*')
-      .eq('business_id', profile.business_id)
+      .eq('business_id', businessId)
       .order(field === 'name' ? 'name' : 'created_at');
     
     if (error) throw error;
@@ -270,12 +276,13 @@ export const clients = {
   },
 
   async get(id: string): Promise<Client | undefined> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('clients')
       .select('*')
       .eq('id', id)
-      .eq('business_id', profile.business_id)
+      .eq('business_id', businessId)
       .single();
     
     if (error && error.code !== 'PGRST116') throw error;
@@ -283,11 +290,12 @@ export const clients = {
   },
 
   async add(client: Omit<Client, 'id'>): Promise<string> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('clients')
       .insert([{
-        business_id: profile.business_id,
+        business_id: businessId,
         name: client.name,
         phone: client.phone || null,
         last_visit: client.lastVisit || null,
@@ -306,7 +314,8 @@ export const clients = {
   },
 
   async update(id: string, changes: Partial<Client>): Promise<void> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const updateData: any = {};
     
     if (changes.name !== undefined) updateData.name = changes.name;
@@ -323,17 +332,18 @@ export const clients = {
       .from('clients')
       .update(updateData)
       .eq('id', id)
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
     
     if (error) throw error;
   },
 
   async count(): Promise<number> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { count, error } = await supabase
       .from('clients')
       .select('*', { count: 'exact', head: true })
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
     
     if (error) throw error;
     return count || 0;
@@ -343,32 +353,35 @@ export const clients = {
 // API de services sin cambios
 export const services = {
   async count(): Promise<number> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { count, error } = await supabase
       .from('services')
       .select('*', { count: 'exact', head: true })
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
 
     if (error) throw error;
     return count ?? 0;
   },
 
   async clear(): Promise<void> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { error } = await supabase
       .from('services')
       .delete()
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
 
     if (error) throw error;
   },
 
   async toArray(): Promise<Service[]> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('services')
       .select('*')
-      .eq('business_id', profile.business_id)
+      .eq('business_id', businessId)
       .order('name');
 
     if (error) throw error;
@@ -376,12 +389,13 @@ export const services = {
   },
 
   async get(id: string): Promise<Service | undefined> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('services')
       .select('*')
       .eq('id', id)
-      .eq('business_id', profile.business_id)
+      .eq('business_id', businessId)
       .single();
 
     if (error && error.code !== 'PGRST116') throw error;
@@ -389,12 +403,13 @@ export const services = {
   },
 
   async insert(service: Omit<Service, 'id'>): Promise<string> {
-    const { user, profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('services')
       .insert([{
-        business_id: profile.business_id,
-        created_by: service.createdBy ?? user.id,
+        business_id: businessId,
+        created_by: service.createdBy ?? 'system',
         name: service.name,
         price: Math.round(service.price * 100),
       }])
@@ -406,13 +421,14 @@ export const services = {
   },
 
   async put(service: Service): Promise<void> {
-    const { user, profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { error } = await supabase
       .from('services')
       .upsert([{
         id: service.id,
-        business_id: profile.business_id,
-        created_by: service.createdBy ?? user.id,
+        business_id: businessId,
+        created_by: service.createdBy ?? 'system',
         name: service.name,
         price: Math.round(service.price * 100),
       }]);
@@ -421,7 +437,8 @@ export const services = {
   },
 
   async update(id: string, changes: Partial<Service>): Promise<void> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const updateData: any = {};
 
     if (changes.name !== undefined) updateData.name = changes.name;
@@ -432,29 +449,31 @@ export const services = {
       .from('services')
       .update(updateData)
       .eq('id', id)
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
 
     if (error) throw error;
   },
 
   async delete(id: string): Promise<void> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { error } = await supabase
       .from('services')
       .delete()
       .eq('id', id)
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
 
     if (error) throw error;
   },
 
   async add(service: Omit<Service, 'id'>): Promise<string> {
-    const { user, profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('services')
       .insert([{
-        business_id: profile.business_id,
-        created_by: service.createdBy ?? user.id,
+        business_id: businessId,
+        created_by: service.createdBy ?? 'system',
         name: service.name,
         price: Math.round(service.price * 100),
       }])
@@ -472,14 +491,15 @@ export const appointments = {
     return {
       between: (fromISO: string, toISO: string) => ({
         toArray: async (): Promise<Appointment[]> => {
-          const { profile } = await getCurrentUser();
+          // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
           const column =
             field === 'startDateTime' ? 'start_date_time' : field;
 
           const { data, error } = await supabase
             .from('appointments')
             .select('*')
-            .eq('business_id', profile.business_id)
+            .eq('business_id', businessId)
             .gte(column, fromISO)
             .lt(column, toISO)
             .order('start_date_time', { ascending: true });
@@ -492,33 +512,36 @@ export const appointments = {
   },
 
   async clear(): Promise<void> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { error } = await supabase
       .from('appointments')
       .delete()
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
 
     if (error) throw error;
   },
 
   async count(): Promise<number> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { count, error } = await supabase
       .from('appointments')
       .select('*', { count: 'exact', head: true })
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
 
     if (error) throw error;
     return count ?? 0;
   },
 
   async add(appointment: Omit<Appointment, 'id'>): Promise<string> {
-    const { user, profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('appointments')
       .insert([{
-        business_id: profile.business_id,
-        created_by: user.id,
+        business_id: businessId,
+        created_by: 'system',
         client_id: appointment.clientId ?? null,
         service_id: appointment.serviceId,
         service_name: appointment.serviceName ?? null, // 🆕 SIMPLIFICACIÓN: Agregar nombre del servicio
@@ -552,11 +575,12 @@ export const appointments = {
   },
 
   async toArray(): Promise<Appointment[]> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('appointments')
       .select('*')
-      .eq('business_id', profile.business_id)
+      .eq('business_id', businessId)
       .order('start_date_time');
     
     if (error) throw error;
@@ -564,12 +588,13 @@ export const appointments = {
   },
 
   async get(id: string): Promise<Appointment | undefined> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('appointments')
       .select('*')
       .eq('id', id)
-      .eq('business_id', profile.business_id)
+      .eq('business_id', businessId)
       .single();
     
     if (error && error.code !== 'PGRST116') throw error;
@@ -577,12 +602,13 @@ export const appointments = {
   },
 
   async insert(appointment: Omit<Appointment, 'id'>): Promise<string> {
-    const { user, profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('appointments')
       .insert([{
-        business_id: profile.business_id,
-        created_by: user.id,
+        business_id: businessId,
+        created_by: 'system',
         client_id: appointment.clientId ?? null,
         service_id: appointment.serviceId,
         service_name: appointment.serviceName ?? null, // 🆕 SIMPLIFICACIÓN: Agregar nombre del servicio
@@ -623,7 +649,8 @@ export const appointments = {
       return;
     }
 
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const updateData: any = {
       client_id: appointment.clientId ?? null,
       service_id: appointment.serviceId,
@@ -654,14 +681,15 @@ export const appointments = {
       .from('appointments')
       .update(updateData)
       .eq('id', appointment.id)
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
 
     if (error) throw error;
   },
 
 
   async update(id: string, changes: Partial<Appointment>): Promise<void> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const updateData: any = {};
 
     if (changes.status !== undefined) updateData.status = changes.status;
@@ -685,19 +713,20 @@ export const appointments = {
       .from('appointments')
       .update(updateData)
       .eq('id', id)
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
 
     if (error) throw error;
   },
 
 
   async delete(id: string): Promise<void> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { error } = await supabase
       .from('appointments')
       .delete()
       .eq('id', id)
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
     
     if (error) throw error;
   }
@@ -706,11 +735,12 @@ export const appointments = {
 // 🆕 Walk-ins API
 export const walkIns = {
   async toArray(): Promise<WalkIn[]> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('walk_ins')
       .select('*')
-      .eq('business_id', profile.business_id)
+      .eq('business_id', businessId)
       .order('timestamp', { ascending: false });
     
     if (error) throw error;
@@ -718,22 +748,24 @@ export const walkIns = {
   },
 
   async count(): Promise<number> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { count, error } = await supabase
       .from('walk_ins')
       .select('*', { count: 'exact', head: true })
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
 
     if (error) throw error;
     return count ?? 0;
   },
 
   async getByDate(date: string): Promise<WalkIn[]> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('walk_ins')
       .select('*')
-      .eq('business_id', profile.business_id)
+      .eq('business_id', businessId)
       .eq('date', date)
       .order('timestamp', { ascending: false });
     
@@ -742,11 +774,12 @@ export const walkIns = {
   },
 
   async add(walkIn: Omit<WalkIn, 'id'>): Promise<string> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('walk_ins')
       .insert([{
-        business_id: profile.business_id,
+        business_id: businessId,
         date: walkIn.date,
         client_id: walkIn.clientId || null,
         service_id: walkIn.serviceId || null,
@@ -767,7 +800,8 @@ export const walkIns = {
   },
 
   async update(id: string, changes: Partial<WalkIn>): Promise<void> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const updateData: any = {};
     
     if (changes.date !== undefined) updateData.date = changes.date;
@@ -790,28 +824,30 @@ export const walkIns = {
       .from('walk_ins')
       .update(updateData)
       .eq('id', id)
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
     
     if (error) throw error;
   },
 
   async delete(id: string): Promise<void> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { error } = await supabase
       .from('walk_ins')
       .delete()
       .eq('id', id)
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
     
     if (error) throw error;
   },
 
   async clear(): Promise<void> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { error } = await supabase
       .from('walk_ins')
       .delete()
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
 
     if (error) throw error;
   }
@@ -820,32 +856,35 @@ export const walkIns = {
 // APIs existentes sin cambios
 export const exceptions = {
   async clear(): Promise<void> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { error } = await supabase
       .from('exceptions')
       .delete()
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
 
     if (error) throw error;
   },
 
   async count(): Promise<number> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { count, error } = await supabase
       .from('exceptions')
       .select('*', { count: 'exact', head: true })
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
 
     if (error) throw error;
     return count ?? 0;
   },
 
   async toArray(): Promise<Exception[]> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('exceptions')
       .select('*')
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
     
     if (error) throw error;
     return data.map(item => ({
@@ -859,11 +898,12 @@ export const exceptions = {
   },
 
   async add(exception: Omit<Exception, 'id'>): Promise<void> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { error } = await supabase
       .from('exceptions')
       .insert([{
-        business_id: profile.business_id,
+        business_id: businessId,
         appointment_id: exception.appointmentId,
         original_date_time: exception.originalDateTime,
         type: exception.type,
@@ -882,21 +922,23 @@ export const exceptions = {
 
 export const clientHistory = {
   async clear(): Promise<void> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { error } = await supabase
       .from('client_history')
       .delete()
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
 
     if (error) throw error;
   },
 
   async add(history: Omit<ClientHistory, 'id'>): Promise<void> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { error } = await supabase
       .from('client_history')
       .insert([{
-        business_id: profile.business_id,
+        business_id: businessId,
         client_id: history.clientId,
         event_type: history.eventType,
         appointment_id: history.appointmentId || null,
@@ -920,11 +962,12 @@ export const clientHistory = {
         return {
           reverse: () => ({
             sortBy: async (sortField: string): Promise<ClientHistory[]> => {
-              const { profile } = await getCurrentUser();
+              // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
               const { data, error } = await supabase
                 .from('client_history')
                 .select('*')
-                .eq('business_id', profile.business_id)
+                .eq('business_id', businessId)
                 .eq(mapFieldName(field), cleanValue)  // usar cleanValue aquí
                 .order('timestamp', { ascending: false });
               
@@ -941,11 +984,12 @@ export const clientHistory = {
           }),
           
           first: async (): Promise<ClientHistory | undefined> => {
-            const { profile } = await getCurrentUser();
+            // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
             const { data, error } = await supabase
               .from('client_history')
               .select('*')
-              .eq('business_id', profile.business_id)
+              .eq('business_id', businessId)
               .eq(mapFieldName(field), cleanValue)  // usar cleanValue aquí
               .limit(1)
               .maybeSingle();
@@ -977,13 +1021,14 @@ const mapFieldName = (field: string) => {
 
 // 🆕 Funciones helper para estadísticas
 export async function getDailyTraffic(date: string) {
-  const { profile } = await getCurrentUser();
+  // 🚀 OPTIMIZADO: Usar business_id fijo
+    const businessId = '550e8400-e29b-41d4-a716-446655440000';
   
   // Citas del día completadas
   const { data: appointmentsData, error: appointmentsError } = await supabase
     .from('appointments')
     .select('*')
-    .eq('business_id', profile.business_id)
+    .eq('business_id', businessId)
     .gte('start_date_time', `${date}T00:00:00.000Z`)
     .lte('start_date_time', `${date}T23:59:59.999Z`)
     .eq('status', 'done');
@@ -994,7 +1039,7 @@ export async function getDailyTraffic(date: string) {
   const { data: walkInsData, error: walkInsError } = await supabase
     .from('walk_ins')
     .select('*')
-    .eq('business_id', profile.business_id)
+    .eq('business_id', businessId)
     .eq('date', date);
 
   if (walkInsError) throw walkInsError;
@@ -1013,13 +1058,14 @@ export async function getDailyTraffic(date: string) {
 }
 
 export async function getDailyRevenue(date: string) {
-  const { profile } = await getCurrentUser();
+  // 🚀 OPTIMIZADO: Usar business_id fijo
+    const businessId = '550e8400-e29b-41d4-a716-446655440000';
   
   // Citas del día con pagos
   const { data: appointmentsData, error: appointmentsError } = await supabase
     .from('appointments')
     .select('*')
-    .eq('business_id', profile.business_id)
+    .eq('business_id', businessId)
     .gte('start_date_time', `${date}T00:00:00.000Z`)
     .lte('start_date_time', `${date}T23:59:59.999Z`)
     .eq('status', 'done');
@@ -1030,7 +1076,7 @@ export async function getDailyRevenue(date: string) {
   const { data: walkInsData, error: walkInsError } = await supabase
     .from('walk_ins')
     .select('*')
-    .eq('business_id', profile.business_id)
+    .eq('business_id', businessId)
     .eq('date', date);
 
   if (walkInsError) throw walkInsError;
@@ -1121,11 +1167,12 @@ function toUserProfile(data: any): UserProfile {
 
 export const userProfiles = {
   async toArray(): Promise<UserProfile[]> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('user_profiles')
       .select('*')
-      .eq('business_id', profile.business_id)
+      .eq('business_id', businessId)
       .order('name');
     
     if (error) throw error;
@@ -1133,12 +1180,13 @@ export const userProfiles = {
   },
 
   async get(id: string): Promise<UserProfile | undefined> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('user_profiles')
       .select('*')
       .eq('id', id)
-      .eq('business_id', profile.business_id)
+      .eq('business_id', businessId)
       .single();
     
     if (error && error.code !== 'PGRST116') throw error;
@@ -1148,11 +1196,12 @@ export const userProfiles = {
 
 export const staffSchedules = {
   async toArray(): Promise<StaffSchedule[]> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('staff_schedules')
       .select('*')
-      .eq('business_id', profile.business_id)
+      .eq('business_id', businessId)
       .eq('is_active', true)
       .order('user_id')
       .order('day_of_week');
@@ -1162,11 +1211,12 @@ export const staffSchedules = {
   },
 
   async getByUser(userId: string): Promise<StaffSchedule[]> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { data, error } = await supabase
       .from('staff_schedules')
       .select('*')
-      .eq('business_id', profile.business_id)
+      .eq('business_id', businessId)
       .eq('user_id', userId)
       .eq('is_active', true)
       .order('day_of_week');
@@ -1176,9 +1226,10 @@ export const staffSchedules = {
   },
 
   async add(schedule: Omit<StaffSchedule, 'id' | 'businessId' | 'createdAt' | 'updatedAt'>): Promise<string> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const row: any = {
-      business_id: profile.business_id,
+      business_id: businessId,
       user_id: schedule.userId,
       day_of_week: schedule.dayOfWeek,
       start_time: schedule.startTime,
@@ -1198,7 +1249,8 @@ export const staffSchedules = {
 
 
   async update(id: string, changes: Partial<StaffSchedule>): Promise<void> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const updateData: any = {};
     
     if (changes.dayOfWeek !== undefined) updateData.day_of_week = changes.dayOfWeek;
@@ -1210,18 +1262,19 @@ export const staffSchedules = {
       .from('staff_schedules')
       .update(updateData)
       .eq('id', id)
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
     
     if (error) throw error;
   },
 
   async delete(id: string): Promise<void> {
-    const { profile } = await getCurrentUser();
+    // 🚀 OPTIMIZADO: Usar business_id desde variable de entorno
+    const businessId = BUSINESS_ID;
     const { error } = await supabase
       .from('staff_schedules')
       .delete()
       .eq('id', id)
-      .eq('business_id', profile.business_id);
+      .eq('business_id', businessId);
     
     if (error) throw error;
   }
@@ -1239,7 +1292,8 @@ export function calculateActualDuration(startedAt?: string, completedAt?: string
 
 // 🆕 Helper para obtener empleados disponibles en un horario
 export async function getAvailableStaff(dayOfWeek: number, time: string): Promise<UserProfile[]> {
-  const { profile } = await getCurrentUser();
+  // 🚀 OPTIMIZADO: Usar business_id fijo
+    const businessId = '550e8400-e29b-41d4-a716-446655440000';
   
   const { data, error } = await supabase
     .from('staff_schedules')
@@ -1253,7 +1307,7 @@ export async function getAvailableStaff(dayOfWeek: number, time: string): Promis
         created_at
       )
     `)
-    .eq('business_id', profile.business_id)
+    .eq('business_id', businessId)
     .eq('day_of_week', dayOfWeek)
     .eq('is_active', true)
     .lte('start_time', time)

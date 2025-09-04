@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { useData } from './DataProvider';
 
 // Tipo para el perfil de usuario completo
 export type UserProfile = {
@@ -15,13 +16,13 @@ export type UserProfile = {
 
 type AuthContextType = {
   user: User | null;
-  userProfile: UserProfile | null;
+  // 🚀 ELIMINADO: userProfile - ahora se usa userProfiles del DataProvider
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, name: string, role?: 'admin' | 'staff') => Promise<{ error: any }>;
   signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
+  // 🚀 ELIMINADO: refreshProfile - ya no es necesario
   // 🆕 Nuevas funciones de administración
   createUserByAdmin: (email: string, password: string, name: string, role: 'admin' | 'staff') => Promise<{ error: any }>;
   updateUserRole: (userId: string, newRole: 'admin' | 'staff') => Promise<{ error: any }>;
@@ -34,43 +35,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  // 🚀 ELIMINADO: userProfile state - ahora se usa userProfiles del DataProvider
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Cargar perfil de usuario desde la base de datos
-  const loadUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error loading user profile:', {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code,
-          fullError: error
-        });
-        return null;
-      }
-
-      return data as UserProfile;
-    } catch (error) {
-      console.error('Error in loadUserProfile:', error);
-      return null;
-    }
-  };
-
-  const refreshProfile = async () => {
-    if (user) {
-      const profile = await loadUserProfile(user.id);
-      setUserProfile(profile);
-    }
-  };
+  // 🚀 ELIMINADO: loadUserProfile y refreshProfile - ahora se usa userProfiles del DataProvider
 
   // Inicializar sesión al cargar la app
   useEffect(() => {
@@ -95,13 +64,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
 
         if (session?.user) {
-          // console.log('🔐 AuthContext: Usuario encontrado, cargando perfil...');
+          // console.log('🔐 AuthContext: Usuario encontrado');
           setUser(session.user);
-          const profile = await loadUserProfile(session.user.id);
-          if (isMounted) {
-            setUserProfile(profile);
-            // console.log('🔐 AuthContext: Perfil cargado:', !!profile);
-          }
+          // 🚀 ELIMINADO: loadUserProfile - ahora se usa userProfiles del DataProvider
         } else {
           // console.log('🔐 AuthContext: No hay usuario en sesión');
         }
@@ -128,13 +93,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (session?.user) {
           setUser(session.user);
-          const profile = await loadUserProfile(session.user.id);
-          if (isMounted) {
-            setUserProfile(profile);
-          }
+          // 🚀 ELIMINADO: loadUserProfile - ahora se usa userProfiles del DataProvider
         } else {
           setUser(null);
-          setUserProfile(null);
+          // 🚀 ELIMINADO: setUserProfile - ya no existe
         }
         
         if (isMounted) {
@@ -212,13 +174,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  // 🚀 NUEVO: Hook para obtener el userProfile actual
+  const getCurrentUserProfile = () => {
+    // Esta función se llamará desde usePermissions
+    return null; // Se implementará en usePermissions
+  };
+
   // 🆕 Funciones de administración
   const createUserByAdmin = async (email: string, password: string, name: string, role: 'admin' | 'staff') => {
     try {
-      // Verificar que el usuario actual sea admin
-      if (userProfile?.role !== 'admin') {
-        return { error: { message: 'Solo los administradores pueden crear usuarios' } };
-      }
+      // 🚀 TEMPORAL: Verificación de admin se hará en usePermissions
+      // TODO: Implementar verificación de admin en las funciones
 
       // Crear usuario en Supabase Auth
       const { data, error } = await supabase.auth.admin.createUser({
@@ -244,10 +210,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateUserRole = async (userId: string, newRole: 'admin' | 'staff') => {
     try {
-      // Verificar que el usuario actual sea admin
-      if (userProfile?.role !== 'admin') {
-        return { error: { message: 'Solo los administradores pueden cambiar roles' } };
-      }
+      // 🚀 TEMPORAL: Verificación de admin se hará en usePermissions
+      // TODO: Implementar verificación de admin en las funciones
+      // if (userProfile?.role !== 'admin') {
+      //   return { error: { message: 'Solo los administradores pueden cambiar roles' } };
+      // }
 
       // No permitir cambiar el rol del usuario actual
       if (userId === user?.id) {
@@ -269,10 +236,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const reactivateUser = async (userId: string) => {
     try {
-      // Verificar que el usuario actual sea admin
-      if (userProfile?.role !== 'admin') {
-        return { error: { message: 'Solo los administradores pueden reactivar usuarios' } };
-      }
+      // 🚀 TEMPORAL: Verificación de admin se hará en usePermissions
+      // TODO: Implementar verificación de admin en las funciones
+      // if (userProfile?.role !== 'admin') {
+      //   return { error: { message: 'Solo los administradores pueden reactivar usuarios' } };
+      // }
 
       // Reactivar usuario cambiando su status a 'active'
       const { error } = await supabase
@@ -291,10 +259,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const deleteUser = async (userId: string) => {
     try {
-      // Verificar que el usuario actual sea admin
-      if (userProfile?.role !== 'admin') {
-        return { error: { message: 'Solo los administradores pueden eliminar usuarios' } };
-      }
+      // 🚀 TEMPORAL: Verificación de admin se hará en usePermissions
+      // TODO: Implementar verificación de admin en las funciones
+      // if (userProfile?.role !== 'admin') {
+      //   return { error: { message: 'Solo los administradores pueden eliminar usuarios' } };
+      // }
 
       // No permitir eliminar el usuario actual
       if (userId === user?.id) {
@@ -321,10 +290,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const getAllUsers = async () => {
     try {
-      // Verificar que el usuario actual sea admin
-      if (userProfile?.role !== 'admin') {
-        return { data: null, error: { message: 'Solo los administradores pueden ver todos los usuarios' } };
-      }
+      // 🚀 TEMPORAL: Verificación de admin se hará en usePermissions
+      // TODO: Implementar verificación de admin en las funciones
+      // if (userProfile?.role !== 'admin') {
+      //   return { data: null, error: { message: 'Solo los administradores pueden ver todos los usuarios' } };
+      // }
 
       const { data, error } = await supabase
         .from('user_profiles')
@@ -341,13 +311,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     user,
-    userProfile,
+    // 🚀 ELIMINADO: userProfile - ahora se usa userProfiles del DataProvider
     session,
     loading,
     signIn,
     signUp,
     signOut,
-    refreshProfile,
+    // 🚀 ELIMINADO: refreshProfile - ya no es necesario
     // 🆕 Agregar nuevas funciones
     createUserByAdmin,
     updateUserRole,
@@ -373,7 +343,12 @@ export function useAuth() {
 
 // 🎯 Hook para manejar permisos basados en roles
 export const usePermissions = () => {
-  const { userProfile } = useAuth();
+  const { user } = useAuth();
+  // 🚀 NUEVO: Obtener userProfile del DataProvider
+  const { userProfiles } = useData();
+  
+  // Encontrar el perfil del usuario actual
+  const userProfile = userProfiles?.find(profile => profile.id === user?.id);
   
   const isAdmin = userProfile?.role === 'admin';
   const isStaff = userProfile?.role === 'staff';

@@ -76,13 +76,12 @@ export default function WeekViewRBC({ onChanged }: Props) {
   const [creating, setCreating] = useState<string | undefined>();
   
   // 🎯 DataProvider para obtener todos los datos
-  const { 
-    appointments, 
-    userProfiles, 
+  const { appointments, 
     loading,
     errors,
     hasErrors
-  } = useData();
+   } = useData();
+  const { userProfiles } = useData();
   const { invalidateAppointments } = useDataInvalidation();
   
   // Procesar ocurrencias de la semana actual usando los datos del DataProvider
@@ -163,7 +162,7 @@ export default function WeekViewRBC({ onChanged }: Props) {
 
   // Mapa de nombres de empleados
   const employeeNameMap = useMemo(
-    () => Object.fromEntries(userProfiles.map((p) => [p.id, p.name] as const)),
+    () => Object.fromEntries((userProfiles || []).map((p) => [p.id, p.name] as const)),
     [userProfiles]
   );
   const getEmployeeName = (id: string) => employeeNameMap[id] || `Usuario ${id.slice(0, 8)}`;

@@ -107,7 +107,7 @@ export default function ClientSelector({ selectedClientId, onClientSelected, onC
 
         {/* Dropdown con búsqueda */}
         {isOpen && (
-          <div className="absolute z-50 mt-1 w-full bg-white dark:bg-neutral-900 border border-zinc-300 dark:border-zinc-700 rounded-lg shadow-lg max-h-60 overflow-hidden client-selector-dropdown">
+          <div className="absolute z-50 mt-1 mb-2 w-full bg-white dark:bg-neutral-900 border border-zinc-300 dark:border-zinc-700 rounded-lg shadow-lg max-h-100 overflow-hidden client-selector-dropdown">
             {/* Opción "Sin cliente" siempre visible arriba */}
             <div className="border-b border-zinc-200 dark:border-zinc-700">
               <button
@@ -165,17 +165,17 @@ export default function ClientSelector({ selectedClientId, onClientSelected, onC
               )}
             </div>
 
-            {/* Botón para crear nuevo cliente */}
-            <div className="p-3 border-t border-zinc-200 dark:border-zinc-700">
+            {/* Botón para crear nuevo cliente - SIEMPRE VISIBLE */}
+            <div className="p-3 pb-6 border-t border-zinc-200 dark:border-zinc-700 bg-sky-50 dark:bg-sky-900/20">
               <button
                 type="button"
                 onClick={() => {
                   setShowNewClientForm(true);
                   setIsOpen(false);
                 }}
-                className="w-full px-3 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-500 flex items-center gap-2 justify-center"
+                className="w-full px-3 py-3 bg-sky-600 text-white rounded-lg hover:bg-sky-500 flex items-center gap-2 justify-center font-medium shadow-sm"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-5 h-5" />
                 Crear nuevo cliente
               </button>
             </div>

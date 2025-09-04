@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { 
   useCreateStaffSchedule, 
   useUpdateStaffSchedule, 
-  useDeleteStaffSchedule 
+  useDeleteStaffSchedule
 } from '@/lib/queries';
 import { useData } from '@/app/context/DataProvider';
 import { useAuth } from '@/app/context/AuthContext';
@@ -18,7 +18,7 @@ export default function StaffManagementView() {
   const [showDeletedUsers, setShowDeletedUsers] = useState(false);
 
   // 🎯 DataProvider para obtener todos los datos
-  const { userProfiles, staffSchedules: schedules, loading } = useData();
+  const { staffSchedules: schedules, userProfiles, loading  } = useData();
   const { reactivateUser } = useAuth();
 
   const createScheduleMutation = useCreateStaffSchedule();
@@ -26,12 +26,12 @@ export default function StaffManagementView() {
   const deleteScheduleMutation = useDeleteStaffSchedule();
 
   // Debug: verificar qué datos están llegando
-      // console.log('🔍 StaffManagementView - userProfiles:', userProfiles);
-    // console.log('🔍 StaffManagementView - userProfiles[0]:', userProfiles[0]);
+      // console.log('🔍 StaffManagementView - userProfile:', userProfile);
+    // console.log('🔍 StaffManagementView - userProfile[0]:', userProfile[0]);
 
   // Separar empleados activos y eliminados
-  const activeEmployees = userProfiles.filter(emp => emp.status === 'active');
-  const deletedEmployees = userProfiles.filter(emp => emp.status === 'deleted');
+  const activeEmployees = userProfiles?.filter(emp => emp.status === 'active') || [];
+  const deletedEmployees = userProfiles?.filter(emp => emp.status === 'deleted') || [];
 
       // console.log('🔍 StaffManagementView - activeEmployees:', activeEmployees);
     // console.log('🔍 StaffManagementView - deletedEmployees:', deletedEmployees);

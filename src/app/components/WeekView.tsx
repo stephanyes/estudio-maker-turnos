@@ -4,6 +4,8 @@ import { DateTime } from 'luxon';
 import { fmtDay, fmtTime } from '@/lib/time';
 import AppointmentForm from './AppointmentForm';
 import { useData } from '@/app/context/DataProvider';
+import { useAuth } from '@/app/context/AuthContext';
+// 🚀 ELIMINADO: useUserProfiles - ahora se usa useData()
 
 export type Occ = {
   id: string;
@@ -64,12 +66,11 @@ export default function WeekView({ onChanged }: Props) {
   const [scale, setScale] = useState(1);
 
   // 🎯 DataProvider para obtener todos los datos
-  const { 
-    appointments, 
-    userProfiles, 
+  const { appointments, 
     loading,
     hasErrors
-  } = useData();
+   } = useData();
+  const { userProfiles } = useData();
   
   // Procesar ocurrencias de la semana actual usando los datos del DataProvider
   const items = useMemo(() => {
@@ -120,7 +121,7 @@ export default function WeekView({ onChanged }: Props) {
   }, [items]);
 
   const employeeNameMap = useMemo(
-    () => Object.fromEntries(userProfiles.map((p) => [p.id, p.name] as const)),
+    () => Object.fromEntries((userProfiles || []).map((p) => [p.id, p.name] as const)),
     [userProfiles]
   );
   const getEmployeeName = (id: string) => employeeNameMap[id] || `Usuario ${id.slice(0, 8)}`;
@@ -240,10 +241,10 @@ export default function WeekView({ onChanged }: Props) {
             <span className="text-xs text-zinc-500">Empleados:</span>
             {loading.staff ? (
               <span className="text-xs text-zinc-400">Cargando…</span>
-            ) : userProfiles.length === 0 ? (
+            ) : userProfiles?.length === 0 ? (
               <span className="text-xs text-zinc-400">Sin empleados</span>
             ) : (
-              userProfiles.map((u) => (
+              userProfiles?.map((u) => (
                 <span key={u.id} className="px-2 py-0.5 rounded-full border border-zinc-200 text-xs" title={u.role}>
                   {u.name}
                 </span>

@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import { DateTime } from 'luxon';
 import { useTimeMetrics, useEmployeeProductivity } from '@/lib/queries';
 import { useData } from '@/app/context/DataProvider';
+import { useAuth } from '@/app/context/AuthContext';
 import { Clock, TrendingUp, TrendingDown, Target, Users, BarChart3, RefreshCw } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 import { useQueryClient } from '@tanstack/react-query';
@@ -141,7 +142,7 @@ export default function TimeMetricsView() {
             className="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm"
           >
             <option value="all">Todos los empleados</option>
-            {userProfiles.map(emp => (
+            {userProfiles?.map(emp => (
               <option key={emp.id} value={emp.id}>
                 {emp.name}
               </option>
@@ -254,7 +255,7 @@ export default function TimeMetricsView() {
       {selectedEmployee !== 'all' && employeeProductivity && (
         <div className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-zinc-200 dark:border-zinc-700">
           <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-3">
-            Productividad: {userProfiles.find(u => u.id === selectedEmployee)?.name}
+            Productividad: {userProfiles?.find(u => u.id === selectedEmployee)?.name}
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>

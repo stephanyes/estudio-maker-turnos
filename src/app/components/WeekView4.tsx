@@ -36,13 +36,11 @@ export default function WeekView4({ onChanged }: Props) {
   const [showMonthSelector, setShowMonthSelector] = useState(false);
   
   // 🎯 DataProvider para obtener todos los datos
-  const { 
-    appointments, 
-    userProfiles, 
+  const { appointments, 
     loading,
     errors,
     hasErrors
-  } = useData();
+   } = useData();
   const { invalidateAppointments } = useDataInvalidation();
 
   // Navegación
