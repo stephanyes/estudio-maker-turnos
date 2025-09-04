@@ -1302,3 +1302,77 @@ function invalidateStatsForDate(queryClient: any, date: string) {
   queryClient.invalidateQueries({ queryKey: ['dailyRevenue', dateString] });
   queryClient.invalidateQueries({ queryKey: ['dailyTraffic', dateString] });
 }
+
+// 🆕 Client Notes Hooks
+export function useClientNotes(clientId: string, page: number = 1, limit: number = 20) {
+  return useQuery({
+    queryKey: ['clientNotes', clientId, page, limit],
+    queryFn: () => db.clientNotes.getByClientId(clientId, page, limit),
+    enabled: !!clientId,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos
+  });
+}
+
+export function useLatestClientNote(clientId: string) {
+  return useQuery({
+    queryKey: ['latestClientNote', clientId],
+    queryFn: () => db.clientNotes.getLatestByClientId(clientId),
+    enabled: !!clientId,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos
+  });
+}
+
+export function useClientNotesCount(clientId: string) {
+  return useQuery({
+    queryKey: ['clientNotesCount', clientId],
+    queryFn: () => db.clientNotes.countByClientId(clientId),
+    enabled: !!clientId,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos
+  });
+}
+
+export function useCreateClientNote() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (note: { clientId: string; noteText: string; createdBy: string }) => 
+      db.clientNotes.add(note),
+    onSuccess: (_, variables) => {
+      // Invalidar todas las queries relacionadas con este cliente
+      queryClient.invalidateQueries({ queryKey: ['clientNotes', variables.clientId] });
+      queryClient.invalidateQueries({ queryKey: ['latestClientNote', variables.clientId] });
+      queryClient.invalidateQueries({ queryKey: ['clientNotesCount', variables.clientId] });
+    },
+  });
+}
+
+export function useUpdateClientNote() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: { noteText: string } }) => 
+      db.clientNotes.update(id, updates),
+    onSuccess: (_, variables) => {
+      // Invalidar todas las queries de notas (no sabemos el clientId aquí)
+      queryClient.invalidateQueries({ queryKey: ['clientNotes'] });
+      queryClient.invalidateQueries({ queryKey: ['latestClientNote'] });
+    },
+  });
+}
+
+export function useDeleteClientNote() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (id: string) => db.clientNotes.delete(id),
+    onSuccess: () => {
+      // Invalidar todas las queries de notas
+      queryClient.invalidateQueries({ queryKey: ['clientNotes'] });
+      queryClient.invalidateQueries({ queryKey: ['latestClientNote'] });
+      queryClient.invalidateQueries({ queryKey: ['clientNotesCount'] });
+    },
+  });
+}

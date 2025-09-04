@@ -1,8 +1,28 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { db, Client } from '@/lib/supabase-db';
+import { useLatestClientNote } from '@/lib/queries';
 
 import { Search, Plus, User } from 'lucide-react';
+
+// Componente para mostrar la última nota de un cliente
+function ClientLatestNote({ clientId }: { clientId: string }) {
+  const { data: latestNote, isLoading } = useLatestClientNote(clientId);
+
+  if (isLoading) {
+    return <div className="text-xs text-sky-400">Cargando...</div>;
+  }
+
+  if (!latestNote) {
+    return null;
+  }
+
+  return (
+    <div className="mt-2 text-sm text-sky-800 dark:text-sky-200 italic">
+      "{latestNote.noteText}"
+    </div>
+  );
+}
 
 type Props = {
   selectedClientId?: string;
@@ -197,11 +217,7 @@ export default function ClientSelector({ selectedClientId, onClientSelected, onC
               </div>
             </div>
           </div>
-          {selectedClient.notes && (
-            <div className="mt-2 text-sm text-sky-800 dark:text-sky-200 italic">
-              "{selectedClient.notes}"
-            </div>
-          )}
+          <ClientLatestNote clientId={selectedClient.id} />
         </div>
       )}
 

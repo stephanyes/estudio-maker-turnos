@@ -40,6 +40,15 @@ export type ClientHistory = {
   notes?: string;
 };
 
+export type ClientNote = {
+  id: string;
+  clientId: string;
+  noteText: string;
+  createdAt: string;
+  createdBy: string;
+  businessId: string;
+};
+
 export type Appointment = {
   id: string;
   clientId?: string;
@@ -1318,8 +1327,106 @@ export async function getAvailableStaff(dayOfWeek: number, time: string): Promis
   return data.map(item => toUserProfile(item.user_profiles));
 }
 
+// 🆕 Client Notes API
+export const clientNotes = {
+  async add(note: Omit<ClientNote, 'id' | 'createdAt' | 'businessId'>): Promise<string> {
+    const businessId = BUSINESS_ID;
+    const { data, error } = await supabase
+      .from('client_notes')
+      .insert([{
+        client_id: note.clientId,
+        note_text: note.noteText,
+        created_by: note.createdBy,
+        business_id: businessId,
+      }])
+      .select('id')
+      .single();
 
+    if (error) throw error;
+    return data.id;
+  },
 
+  async getByClientId(clientId: string, page: number = 1, limit: number = 20): Promise<ClientNote[]> {
+    const businessId = BUSINESS_ID;
+    const offset = (page - 1) * limit;
+    
+    const { data, error } = await supabase
+      .from('client_notes')
+      .select('*')
+      .eq('client_id', clientId)
+      .eq('business_id', businessId)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) throw error;
+    return data.map(toClientNote);
+  },
+
+  async getLatestByClientId(clientId: string): Promise<ClientNote | null> {
+    const businessId = BUSINESS_ID;
+    const { data, error } = await supabase
+      .from('client_notes')
+      .select('*')
+      .eq('client_id', clientId)
+      .eq('business_id', businessId)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (error) throw error;
+    
+    if (!data || data.length === 0) return null;
+    
+    return toClientNote(data[0]);
+  },
+
+  async update(id: string, updates: Partial<Pick<ClientNote, 'noteText'>>): Promise<void> {
+    const businessId = BUSINESS_ID;
+    const { error } = await supabase
+      .from('client_notes')
+      .update({
+        note_text: updates.noteText,
+      })
+      .eq('id', id)
+      .eq('business_id', businessId);
+
+    if (error) throw error;
+  },
+
+  async delete(id: string): Promise<void> {
+    const businessId = BUSINESS_ID;
+    const { error } = await supabase
+      .from('client_notes')
+      .delete()
+      .eq('id', id)
+      .eq('business_id', businessId);
+
+    if (error) throw error;
+  },
+
+  async countByClientId(clientId: string): Promise<number> {
+    const businessId = BUSINESS_ID;
+    const { count, error } = await supabase
+      .from('client_notes')
+      .select('*', { count: 'exact', head: true })
+      .eq('client_id', clientId)
+      .eq('business_id', businessId);
+
+    if (error) throw error;
+    return count ?? 0;
+  }
+};
+
+// Helper function para convertir datos de Supabase a ClientNote
+function toClientNote(data: any): ClientNote {
+  return {
+    id: data.id,
+    clientId: data.client_id,
+    noteText: data.note_text,
+    createdAt: data.created_at,
+    createdBy: data.created_by,
+    businessId: data.business_id,
+  };
+}
 
 // Export simplificado
 export const db = {
@@ -1328,6 +1435,7 @@ export const db = {
   appointments, // ya actualizado con los nuevos campos
   exceptions,
   clientHistory,
+  clientNotes, // 🆕 Agregar clientNotes
   walkIns, // ya actualizado con los nuevos campos
   userProfiles, // 🆕
   staffSchedules, // 🆕

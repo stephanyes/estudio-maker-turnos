@@ -2,8 +2,29 @@
 import { useState, useMemo } from 'react';
 import { db, Client } from '@/lib/supabase-db';
 import { useData } from '@/app/context/DataProvider';
+import { useLatestClientNote } from '@/lib/queries';
 import { DateTime } from 'luxon';
 import { User, Phone, MessageCircle, Instagram, Calendar, TrendingUp, TrendingDown, Search } from 'lucide-react';
+import ClientNotesManager from './ClientNotesManager';
+
+// Componente para mostrar la última nota de un cliente
+function ClientLatestNote({ clientId }: { clientId: string }) {
+  const { data: latestNote, isLoading } = useLatestClientNote(clientId);
+
+  if (isLoading) {
+    return <div className="text-xs text-zinc-400">Cargando...</div>;
+  }
+
+  if (!latestNote) {
+    return null;
+  }
+
+  return (
+    <div className="mt-2 text-sm text-zinc-600 dark:text-zinc-300 italic pl-13">
+      "{latestNote.noteText}"
+    </div>
+  );
+}
 
 export default function ClientsView() {
   // const [clients, setClients] = useState<Client[]>([]);
@@ -282,11 +303,7 @@ const filteredClients = useMemo(() => {
                   </div>
                 </div>
 
-                {client.notes && (
-                  <div className="mt-2 text-sm text-zinc-600 dark:text-zinc-300 italic pl-13">
-                    "{client.notes}"
-                  </div>
-                )}
+                <ClientLatestNote clientId={client.id} />
               </div>
             );
           })}
@@ -348,7 +365,7 @@ function ClientDetailModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="p-6 border-b border-zinc-200 dark:border-zinc-700">
           <div className="flex items-center justify-between">
@@ -476,6 +493,11 @@ function ClientDetailModal({
                 )}
               </>
             )}
+          </div>
+
+          {/* Historial de Notas */}
+          <div className="border-t border-zinc-200 dark:border-zinc-700 pt-6">
+            <ClientNotesManager clientId={client.id} clientName={client.name} />
           </div>
         </div>
 
