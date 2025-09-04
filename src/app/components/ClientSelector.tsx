@@ -244,14 +244,25 @@ function NewClientModal({
     if (!name.trim()) return;
 
     try {
+      // Preparar datos según el método de contacto
+      let phoneData = undefined;
+      let contactHandleData = undefined;
+
+      if (contactMethod === 'instagram') {
+        contactHandleData = contactHandle.trim() || undefined;
+      } else {
+        phoneData = phone.trim() || undefined;
+        contactHandleData = phoneData; // Para WhatsApp y teléfono, el handle es el mismo número
+      }
+
       // Solo pasar datos sin ID
       const clientData = {
         name: name.trim(),
-        phone: phone.trim() || undefined,
+        phone: phoneData,
         totalVisits: 0,
         totalCancellations: 0,
         contactMethod,
-        contactHandle: contactHandle.trim() || undefined,
+        contactHandle: contactHandleData,
         notes: notes.trim() || undefined,
         createdAt: new Date().toISOString()
       };
@@ -301,18 +312,6 @@ function NewClientModal({
         </label>
 
         <label className="block">
-          <span className="text-sm text-zinc-700 dark:text-zinc-300">Teléfono</span>
-          <input
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className={inputCls}
-            placeholder="+54911234567"
-          />
-        </label>
-
-        <label className="block">
           <span className="text-sm text-zinc-700 dark:text-zinc-300">Método de contacto</span>
           <select
             value={contactMethod}
@@ -327,12 +326,18 @@ function NewClientModal({
 
         <label className="block">
           <span className="text-sm text-zinc-700 dark:text-zinc-300">
-            {contactMethod === 'instagram' ? '@usuario' : 'Número completo'}
+            {contactMethod === 'instagram' ? '@usuario de Instagram' : 'Número de contacto'}
           </span>
           <input
-            type="text"
-            value={contactHandle}
-            onChange={(e) => setContactHandle(e.target.value)}
+            type={contactMethod === 'instagram' ? 'text' : 'tel'}
+            value={contactMethod === 'instagram' ? contactHandle : phone}
+            onChange={(e) => {
+              if (contactMethod === 'instagram') {
+                setContactHandle(e.target.value);
+              } else {
+                setPhone(e.target.value);
+              }
+            }}
             onKeyDown={handleKeyDown}
             className={inputCls}
             placeholder={contactMethod === 'instagram' ? '@juanperez' : '+54911234567'}

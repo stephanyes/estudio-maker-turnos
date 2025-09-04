@@ -103,12 +103,17 @@ export default function Home() {
         <div className="card flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     {/* Mobile Menu Button */}
           <div className="flex items-center justify-between md:hidden">
-            {/* Logo izquierda */}
-            <img 
-              src="/assets/imgs/logo.PNG" 
-              alt="Logo" 
-              className="w-16 h-16 object-contain"
-            />
+            {/* Logo izquierda - Clickable para ir a agenda */}
+            <button
+              onClick={() => setView('week')}
+              className="focus:outline-none"
+            >
+              <img 
+                src="/assets/imgs/logo.PNG" 
+                alt="Logo" 
+                className="w-16 h-16 object-contain hover:opacity-80 transition-opacity"
+              />
+            </button>
             
             {/* Texto centro */}
             <img 
